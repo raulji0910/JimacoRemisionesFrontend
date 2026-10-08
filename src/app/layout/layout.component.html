@@ -1,0 +1,48 @@
+<mat-sidenav-container class="layout">
+  <mat-sidenav #sidenav [mode]="esMovil() ? 'over' : 'side'" [opened]="!esMovil()" class="layout__sidenav">
+    <div class="layout__logo">
+      <img src="logo-mark.png" alt="Jimaco" />
+    </div>
+
+    <mat-nav-list>
+      <a mat-list-item routerLink="/remisiones" routerLinkActive="activo" (click)="esMovil() && sidenav.close()">
+        <mat-icon matListItemIcon>receipt_long</mat-icon>
+        <span matListItemTitle>Remisiones</span>
+      </a>
+      <a mat-list-item routerLink="/productos" routerLinkActive="activo" (click)="esMovil() && sidenav.close()">
+        <mat-icon matListItemIcon>inventory_2</mat-icon>
+        <span matListItemTitle>Productos</span>
+      </a>
+      <a mat-list-item routerLink="/compradores" routerLinkActive="activo" (click)="esMovil() && sidenav.close()">
+        <mat-icon matListItemIcon>contacts</mat-icon>
+        <span matListItemTitle>Compradores</span>
+      </a>
+      @if (esAdmin) {
+        <a mat-list-item routerLink="/usuarios" routerLinkActive="activo" (click)="esMovil() && sidenav.close()">
+          <mat-icon matListItemIcon>group</mat-icon>
+          <span matListItemTitle>Usuarios</span>
+        </a>
+      }
+    </mat-nav-list>
+
+    <span class="layout__version">v{{ version }}</span>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="layout__toolbar">
+      <button mat-icon-button (click)="sidenav.toggle()" aria-label="Abrir menú">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="layout__titulo">Jimaco Remisiones</span>
+      <span class="layout__spacer"></span>
+      <span class="layout__usuario">{{ usuario()?.nombre }}</span>
+      <button mat-icon-button (click)="cerrarSesion()" aria-label="Cerrar sesión">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <main class="layout__contenido">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

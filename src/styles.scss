@@ -1,0 +1,134 @@
+@use '@angular/material' as mat;
+@use './theme-colors' as jimaco-theme;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: jimaco-theme.$primary-palette,
+        tertiary: jimaco-theme.$tertiary-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  color-scheme: light;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+// Formularios compartidos dentro de mat-dialog (nuevo/editar producto, proveedor, precio).
+.dialogo-form {
+  display: flex;
+  flex-direction: column;
+
+  &__campo {
+    width: 100%;
+
+    // Separación con el título del diálogo: sin esto, el label flotante del primer
+    // campo queda pegado al texto del título y se ve encimado. El !important es
+    // necesario: el CSS propio de mat-mdc-form-field/mat-dialog-content de Material
+    // sobreescribe silenciosamente tanto el padding-top del contenedor como un
+    // margin-top normal en este elemento.
+    &:first-child {
+      margin-top: 0.75rem !important;
+    }
+  }
+}
+
+.usuario-form__nota,
+.dialogo-form__nota {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.dialogo-form__ajuste {
+  display: flex;
+  flex-direction: column;
+  margin: 0.25rem 0 1rem;
+}
+
+.dialogo-form__iva {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+
+  &-costo {
+    flex: 2;
+  }
+
+  &-select {
+    flex: 1;
+    min-width: 5.5rem;
+  }
+}
+
+.dialogo-form__ajuste-resultado {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+// Tablas responsivas: por debajo de 768px, cada fila se apila como una tarjeta.
+// Cada <td> debe tener [attr.data-label] con el nombre de la columna.
+@media (max-width: 768px) {
+  table.tabla-responsiva {
+    display: block;
+
+    tr.mat-mdc-header-row {
+      display: none;
+    }
+
+    tr.mat-mdc-row {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      padding: 0.5rem 0;
+    }
+
+    td.mat-mdc-cell {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      border: none;
+      padding: 0.35rem 0.75rem;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--mat-sys-on-surface-variant);
+      }
+    }
+  }
+}
+
+// Chips de estado compartidos (lista y detalle de remisiones).
+.chip--ok {
+  --mat-chip-label-text-color: var(--mat-sys-on-tertiary-container);
+  background-color: var(--mat-sys-tertiary-container);
+}
+
+.chip--pendiente {
+  --mat-chip-label-text-color: #5c3d00;
+  background-color: #ffe9b8;
+}
+
+.chip--error {
+  --mat-chip-label-text-color: var(--mat-sys-on-error-container);
+  background-color: var(--mat-sys-error-container);
+}
+

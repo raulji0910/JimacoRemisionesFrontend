@@ -1,0 +1,92 @@
+<h2 mat-dialog-title>{{ editando ? 'Editar comprador' : 'Nuevo comprador' }}</h2>
+
+<mat-dialog-content class="dialogo-form comprador-form">
+  <mat-button-toggle-group
+    class="comprador-form__persona"
+    [(ngModel)]="tipoPersona"
+    (ngModelChange)="alCambiarTipoPersona()"
+    name="tipoPersona"
+    aria-label="Tipo de persona"
+  >
+    <mat-button-toggle value="Natural">Persona natural</mat-button-toggle>
+    <mat-button-toggle value="Juridica">Persona jurídica</mat-button-toggle>
+  </mat-button-toggle-group>
+
+  <div class="comprador-form__fila">
+    <mat-form-field appearance="outline" class="comprador-form__tipo">
+      <mat-label>Tipo</mat-label>
+      <mat-select [(ngModel)]="tipoDocumento" name="tipoDocumento" [disabled]="esJuridica || documentoBloqueado">
+        @for (tipo of tiposDocumento; track tipo.codigo) {
+          <mat-option [value]="tipo.codigo">{{ tipo.codigo }} — {{ tipo.nombre }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="comprador-form__numero">
+      <mat-label>{{ esJuridica ? 'NIT (sin dígito de verificación)' : 'Número de documento' }}</mat-label>
+      <input matInput [(ngModel)]="numeroDocumento" name="numeroDocumento" required [disabled]="documentoBloqueado" />
+      @if (documentoBloqueado) {
+        <mat-hint>Viene de World Office, no se puede cambiar</mat-hint>
+      }
+    </mat-form-field>
+  </div>
+
+  @if (esJuridica) {
+    <mat-form-field appearance="outline" class="dialogo-form__campo">
+      <mat-label>Razón social</mat-label>
+      <input matInput [(ngModel)]="primerNombre" name="razonSocial" required />
+    </mat-form-field>
+  } @else {
+    <div class="comprador-form__fila">
+      <mat-form-field appearance="outline" class="comprador-form__mitad">
+        <mat-label>Primer nombre</mat-label>
+        <input matInput [(ngModel)]="primerNombre" name="primerNombre" required />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="comprador-form__mitad">
+        <mat-label>Segundo nombre</mat-label>
+        <input matInput [(ngModel)]="segundoNombre" name="segundoNombre" />
+      </mat-form-field>
+    </div>
+    <div class="comprador-form__fila">
+      <mat-form-field appearance="outline" class="comprador-form__mitad">
+        <mat-label>Primer apellido</mat-label>
+        <input matInput [(ngModel)]="primerApellido" name="primerApellido" required />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="comprador-form__mitad">
+        <mat-label>Segundo apellido</mat-label>
+        <input matInput [(ngModel)]="segundoApellido" name="segundoApellido" />
+      </mat-form-field>
+    </div>
+  }
+
+  <mat-form-field appearance="outline" class="dialogo-form__campo">
+    <mat-label>Correo electrónico</mat-label>
+    <input matInput type="email" [(ngModel)]="email" name="email" required />
+    <mat-hint>A este correo se envía la remisión una vez pagada</mat-hint>
+  </mat-form-field>
+
+  <div class="comprador-form__fila">
+    <mat-form-field appearance="outline" class="comprador-form__mitad">
+      <mat-label>Teléfono</mat-label>
+      <input matInput [(ngModel)]="telefono" name="telefono" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="comprador-form__mitad">
+      <mat-label>Ciudad</mat-label>
+      <input matInput [(ngModel)]="ciudad" name="ciudad" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="dialogo-form__campo">
+    <mat-label>Dirección (de entrega)</mat-label>
+    <input matInput [(ngModel)]="direccion" name="direccion" />
+  </mat-form-field>
+
+  @if (editando) {
+    <mat-checkbox [(ngModel)]="activo" name="activo">Activo</mat-checkbox>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="guardar()" [disabled]="!valido">Guardar</button>
+</mat-dialog-actions>

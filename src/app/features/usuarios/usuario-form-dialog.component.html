@@ -1,0 +1,47 @@
+<h2 mat-dialog-title>{{ editando ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+
+<mat-dialog-content class="dialogo-form">
+  <mat-form-field appearance="outline" class="dialogo-form__campo">
+    <mat-label>Nombre</mat-label>
+    <input matInput [(ngModel)]="nombre" name="nombre" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="dialogo-form__campo">
+    <mat-label>Correo</mat-label>
+    <input matInput type="email" [(ngModel)]="email" name="email" required [disabled]="editando" />
+  </mat-form-field>
+
+  @if (!editando) {
+    <mat-form-field appearance="outline" class="dialogo-form__campo">
+      <mat-label>Contraseña</mat-label>
+      <input matInput type="password" [(ngModel)]="password" name="password" required />
+    </mat-form-field>
+  } @else {
+    <mat-form-field appearance="outline" class="dialogo-form__campo">
+      <mat-label>Nueva contraseña</mat-label>
+      <input matInput type="password" [(ngModel)]="nuevaPassword" name="nuevaPassword" />
+      <mat-hint>Dejar en blanco para no cambiarla</mat-hint>
+    </mat-form-field>
+  }
+
+  <mat-form-field appearance="outline" class="dialogo-form__campo">
+    <mat-label>Rol</mat-label>
+    <mat-select [(ngModel)]="rol" name="rol" [disabled]="esUsuarioActual">
+      <mat-option value="Admin">Administrador</mat-option>
+      <mat-option value="Operador">Operador</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  @if (editando) {
+    <mat-slide-toggle [(ngModel)]="activo" [disabled]="esUsuarioActual">Activo</mat-slide-toggle>
+  }
+
+  @if (esUsuarioActual) {
+    <p class="usuario-form__nota">No puedes cambiar tu propio rol ni desactivar tu propio usuario.</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="guardar()">Guardar</button>
+</mat-dialog-actions>

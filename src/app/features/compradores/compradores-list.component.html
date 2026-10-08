@@ -1,0 +1,73 @@
+<div class="compradores">
+  <div class="compradores__header">
+    <h2>Compradores</h2>
+    <button mat-flat-button color="primary" (click)="abrirDialogo(null)">
+      <mat-icon>add</mat-icon>
+      Nuevo comprador
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="compradores__buscador">
+    <mat-label>Buscar por nombre o documento</mat-label>
+    <input id="buscar-comprador" matInput [(ngModel)]="texto" (ngModelChange)="buscar()" />
+    @if (texto) {
+      <button matSuffix mat-icon-button aria-label="Limpiar búsqueda" (click)="limpiarBusqueda()">
+        <mat-icon>close</mat-icon>
+      </button>
+    } @else {
+      <mat-icon matSuffix>search</mat-icon>
+    }
+  </mat-form-field>
+
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <table mat-table [dataSource]="compradores()" class="tabla-responsiva">
+    <ng-container matColumnDef="documento">
+      <th mat-header-cell *matHeaderCellDef>Documento</th>
+      <td mat-cell *matCellDef="let c" data-label="Documento">
+        {{ c.tipoDocumento }} {{ c.numeroDocumento }}{{ c.dv ? '-' + c.dv : '' }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="nombre">
+      <th mat-header-cell *matHeaderCellDef>Nombre / Razón social</th>
+      <td mat-cell *matCellDef="let c" data-label="Nombre">{{ c.nombreCompleto }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef>Correo</th>
+      <td mat-cell *matCellDef="let c" data-label="Correo">{{ c.email }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="telefono">
+      <th mat-header-cell *matHeaderCellDef>Teléfono</th>
+      <td mat-cell *matCellDef="let c" data-label="Teléfono">{{ c.telefono || '—' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="estado">
+      <th mat-header-cell *matHeaderCellDef>Estado</th>
+      <td mat-cell *matCellDef="let c" data-label="Estado">
+        <mat-chip [class.compradores__chip--activo]="c.activo" [class.compradores__chip--inactivo]="!c.activo">
+          {{ c.activo ? 'Activo' : 'Inactivo' }}
+        </mat-chip>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+    <tr mat-row *matRowDef="let c; columns: columnas" class="compradores__fila" (click)="abrirDialogo(c)"></tr>
+
+    <tr class="compradores__vacio-fila" *matNoDataRow>
+      <td [attr.colspan]="columnas.length" class="compradores__vacio">No hay compradores que coincidan con la búsqueda.</td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [length]="total()"
+    [pageIndex]="pageIndex()"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="[10, 25, 50]"
+    (page)="alCambiarPagina($event)"
+  />
+</div>

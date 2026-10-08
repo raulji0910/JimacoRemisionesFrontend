@@ -1,0 +1,192 @@
+<div class="remision-form">
+  <div class="remision-form__header">
+    <h2>{{ editandoId() ? 'Editar remisión' : 'Nueva remisión' }}</h2>
+    <a mat-button [routerLink]="editandoId() ? ['/remisiones', editandoId()] : ['/remisiones']">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </a>
+  </div>
+
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <!-- 1. Comprador -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>1. Comprador</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (comprador(); as c) {
+        <div class="remision-form__comprador">
+          <div>
+            <strong>{{ c.nombreCompleto }}</strong>
+            <div>{{ c.tipoDocumento }} {{ c.numeroDocumento }}{{ c.dv ? '-' + c.dv : '' }}</div>
+            <div class="remision-form__detalle">{{ c.email }}@if (c.telefono) { · {{ c.telefono }} }</div>
+            <div class="remision-form__detalle">{{ c.direccion || 'Sin dirección' }}{{ c.ciudad ? ', ' + c.ciudad : '' }}</div>
+          </div>
+          <div class="remision-form__acciones">
+            <button mat-stroked-button (click)="editarComprador()">
+              <mat-icon>edit</mat-icon>
+              Editar
+            </button>
+            <button mat-button (click)="cambiarComprador()">Cambiar</button>
+          </div>
+        </div>
+      } @else {
+        <div class="remision-form__buscar-comprador">
+          <mat-form-field appearance="outline" class="remision-form__campo-grande">
+            <mat-label>Buscar por NIT / cédula o nombre</mat-label>
+            <input id="buscar-comprador" matInput [formControl]="buscadorComprador" [matAutocomplete]="autoComprador" />
+            <mat-icon matSuffix>search</mat-icon>
+            <mat-autocomplete #autoComprador="matAutocomplete" [displayWith]="mostrarComprador" (optionSelected)="elegirComprador($event)">
+              @for (c of compradoresEncontrados(); track c.id) {
+                <mat-option [value]="c">{{ c.tipoDocumento }} {{ c.numeroDocumento }} — {{ c.nombreCompleto }}</mat-option>
+              }
+            </mat-autocomplete>
+            <mat-hint>Si no aparece, créalo con el botón de al lado</mat-hint>
+          </mat-form-field>
+          <button mat-flat-button color="primary" (click)="nuevoComprador()">
+            <mat-icon>person_add</mat-icon>
+            Nuevo comprador
+          </button>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 2. Productos -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>2. Productos</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="remision-form__campo-grande">
+        <mat-label>Agregar producto por código o nombre</mat-label>
+        <input id="buscar-producto" matInput [formControl]="buscadorProducto" [matAutocomplete]="autoProducto" />
+        <mat-icon matSuffix>add_shopping_cart</mat-icon>
+        <mat-autocomplete #autoProducto="matAutocomplete" [displayWith]="mostrarProducto" (optionSelected)="agregarProducto($event)">
+          @for (p of productosEncontrados(); track p.id) {
+            <mat-option [value]="p">
+              {{ p.codigo }} — {{ p.nombre }}
+              <span class="remision-form__precio-opcion">{{ p.precioVenta | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      @if (lineas().length === 0) {
+        <p class="remision-form__vacio">Todavía no hay productos en la remisión.</p>
+      } @else {
+        <div class="remision-form__tabla-contenedor">
+          <table class="remision-form__tabla">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th class="num">Cant.</th>
+                <th class="num">Precio</th>
+                <th class="num">IVA</th>
+                <th class="num">Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of lineas(); track l.productoId) {
+                <tr>
+                  <td data-label="Código">{{ l.codigo }}</td>
+                  <td data-label="Producto">{{ l.nombre }}</td>
+                  <td data-label="Cant." class="num">
+                    <input
+                      class="remision-form__cantidad"
+                      type="number"
+                      min="1"
+                      step="1"
+                      [value]="l.cantidad"
+                      (change)="cambiarCantidad(l, $any($event.target).value)"
+                      aria-label="Cantidad"
+                    />
+                  </td>
+                  <td data-label="Precio" class="num">{{ l.precioUnitario | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                  <td data-label="IVA" class="num">{{ l.iva }}%</td>
+                  <td data-label="Subtotal" class="num">{{ l.precioUnitario * l.cantidad | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                  <td>
+                    <button mat-icon-button (click)="quitarLinea(l)" aria-label="Quitar producto">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 3. Entrega, descuento y totales -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>3. Entrega, descuento y total</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="remision-form__final">
+      <div class="remision-form__opciones">
+        <div>
+          <div class="remision-form__etiqueta">Entrega</div>
+          <mat-button-toggle-group [(ngModel)]="tipoEntrega" name="tipoEntrega" aria-label="Tipo de entrega">
+            <mat-button-toggle value="EnSitio">
+              <mat-icon>storefront</mat-icon>
+              Entregada en sitio
+            </mat-button-toggle>
+            <mat-button-toggle value="Envio">
+              <mat-icon>local_shipping</mat-icon>
+              Envío posterior
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Descuento (pesos)</mat-label>
+          <input
+            id="descuento"
+            matInput
+            type="number"
+            min="0"
+            step="1"
+            [value]="descuento()"
+            (input)="cambiarDescuento($any($event.target).value)"
+          />
+          <span matTextPrefix>$&nbsp;</span>
+          @if (descuentoInvalido()) {
+            <mat-hint class="remision-form__error">No puede superar el subtotal</mat-hint>
+          } @else {
+            <mat-hint>Se reparte entre las tarifas de IVA</mat-hint>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nota (opcional)</mat-label>
+          <input matInput [(ngModel)]="nota" name="nota" maxlength="500" />
+        </mat-form-field>
+      </div>
+
+      <div class="remision-form__totales">
+        <div class="fila"><span>Subtotal ítems</span><strong>{{ calculo().subtotalItems | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+        @if (descuento() > 0) {
+          <div class="fila"><span>Descuento</span><strong>-{{ descuento() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          <div class="fila"><span>Subtotal</span><strong>{{ calculo().subtotalConDescuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+        }
+        @for (tramo of calculo().ivaDesglose; track tramo.tarifa) {
+          <div class="fila"><span>IVA ({{ tramo.tarifa }}%)</span><strong>{{ tramo.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+        }
+        <div class="fila total"><span>TOTAL</span><strong>{{ calculo().totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-flat-button color="primary" (click)="guardar()" [disabled]="!puedeGuardar()">
+        <mat-icon>save</mat-icon>
+        {{ editandoId() ? 'Guardar cambios' : 'Crear remisión' }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
