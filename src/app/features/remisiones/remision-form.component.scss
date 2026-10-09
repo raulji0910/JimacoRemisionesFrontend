@@ -55,6 +55,13 @@
     font-size: 0.8rem;
   }
 
+  &__alerta {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--mat-sys-error);
+    font-weight: 500;
+  }
+
   &__vacio {
     color: var(--mat-sys-on-surface-variant);
     margin: 0.5rem 0 0;

@@ -7,5 +7,5 @@ export interface LoginResponse {
   token: string;
   nombre: string;
   email: string;
-  rol: 'Admin' | 'Operador';
+  rol: 'Admin' | 'Operador' | 'Sincronizador';
 }

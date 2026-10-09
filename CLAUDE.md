@@ -27,4 +27,7 @@ npx ng serve                               # lee apiUrl de src/environments/envi
 ```
 
 ## Versionado
-En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.1.0`).
+En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.2.0`).
+
+## Datos que vienen de World Office
+La pantalla Productos muestra la **existencia** en la bodega de venta (sincronizada, "—" = sin dato) y marca **"Sin precio"** los productos nuevos de WO: no se pueden agregar a una remisión (opción deshabilitada) hasta que se les asigne precio. Al armar una remisión se avisa si la cantidad supera la existencia (no bloquea). Un comprador traído de WO puede no tener correo: la remisión no se puede crear hasta editarlo. Rol nuevo `Sincronizador` (usuario de servicio, ver CLAUDE.md del backend).

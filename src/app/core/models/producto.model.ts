@@ -10,6 +10,10 @@ export interface Producto {
   iva: number;
   origen: OrigenRegistro;
   activo: boolean;
+  idWorldOffice: number | null;
+  // Existencia en la bodega de venta según la última sincronización con World Office (null = sin dato).
+  existencia: number | null;
+  existenciaActualizadaEn: string | null;
 }
 
 export interface ProductoCrear {

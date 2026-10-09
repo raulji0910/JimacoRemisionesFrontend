@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,6 +21,7 @@ import { ProductoFormDialogComponent } from './producto-form-dialog.component';
   imports: [
     FormsModule,
     CurrencyPipe,
+    DecimalPipe,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
@@ -38,7 +39,7 @@ export class ProductosListComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
-  readonly columnas = ['codigo', 'nombre', 'precioVenta', 'iva', 'origen', 'estado'];
+  readonly columnas = ['codigo', 'nombre', 'precioVenta', 'iva', 'existencia', 'origen', 'estado'];
   readonly productos = signal<Producto[]>([]);
   readonly total = signal(0);
   readonly pageIndex = signal(0);

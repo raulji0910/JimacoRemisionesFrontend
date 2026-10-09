@@ -24,7 +24,7 @@
 
     <ng-container matColumnDef="rol">
       <th mat-header-cell *matHeaderCellDef>Rol</th>
-      <td mat-cell *matCellDef="let usuario" data-label="Rol">{{ usuario.rol === 'Admin' ? 'Administrador' : 'Operador' }}</td>
+      <td mat-cell *matCellDef="let usuario" data-label="Rol">{{ usuario.rol === 'Admin' ? 'Administrador' : usuario.rol === 'Sincronizador' ? 'Sincronizador (servicio)' : 'Operador' }}</td>
     </ng-container>
 
     <ng-container matColumnDef="estado">

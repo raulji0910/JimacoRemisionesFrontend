@@ -29,6 +29,8 @@ interface Linea {
   precioUnitario: number;
   iva: number;
   cantidad: number;
+  // Existencia en la bodega de venta (World Office) al agregarla; null = sin dato.
+  existencia: number | null;
 }
 
 // Arma (o edita, mientras esté por cobrar) una remisión: comprador, productos, descuento y tipo
@@ -89,7 +91,7 @@ export class RemisionFormComponent implements OnInit {
   );
 
   readonly puedeGuardar = computed(
-    () => !!this.comprador() && this.lineas().length > 0 && !this.descuentoInvalido() && !this.guardando()
+    () => !!this.comprador()?.email && this.lineas().length > 0 && !this.descuentoInvalido() && !this.guardando()
   );
 
   ngOnInit(): void {
@@ -138,7 +140,8 @@ export class RemisionFormComponent implements OnInit {
             nombre: i.productoNombre,
             precioUnitario: i.precioUnitario,
             iva: i.iva,
-            cantidad: i.cantidad
+            cantidad: i.cantidad,
+            existencia: null
           }))
         );
         this.compradorService.obtenerPorId(remision.compradorId).subscribe((c) => this.comprador.set(c));
@@ -220,7 +223,8 @@ export class RemisionFormComponent implements OnInit {
           nombre: producto.nombre,
           precioUnitario: producto.precioVenta,
           iva: producto.iva,
-          cantidad: 1
+          cantidad: 1,
+          existencia: producto.existencia
         }
       ];
     });

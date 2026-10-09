@@ -21,7 +21,13 @@ export const TIPOS_DOCUMENTO = [
   { codigo: 'NIT', nombre: 'NIT' },
   { codigo: 'CE', nombre: 'Cédula de extranjería' },
   { codigo: 'PAS', nombre: 'Pasaporte' },
-  { codigo: 'TI', nombre: 'Tarjeta de identidad' }
+  { codigo: 'TI', nombre: 'Tarjeta de identidad' },
+  { codigo: 'TE', nombre: 'Tarjeta de extranjería' },
+  { codigo: 'PEP', nombre: 'Permiso especial de permanencia' },
+  { codigo: 'PPT', nombre: 'Permiso por protección temporal' },
+  { codigo: 'RC', nombre: 'Registro civil' },
+  { codigo: 'NUIP', nombre: 'NUIP' },
+  { codigo: 'OTRO', nombre: 'Otro' }
 ];
 
 @Component({

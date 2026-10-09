@@ -22,6 +22,9 @@
           <div>
             <strong>{{ c.nombreCompleto }}</strong>
             <div>{{ c.tipoDocumento }} {{ c.numeroDocumento }}{{ c.dv ? '-' + c.dv : '' }}</div>
+            @if (!c.email) {
+              <div class="remision-form__alerta">Sin correo: edítalo y agrégalo para poder enviar la remisión.</div>
+            }
             <div class="remision-form__detalle">{{ c.email }}@if (c.telefono) { · {{ c.telefono }} }</div>
             <div class="remision-form__detalle">{{ c.direccion || 'Sin dirección' }}{{ c.ciudad ? ', ' + c.ciudad : '' }}</div>
           </div>
@@ -67,9 +70,16 @@
         <mat-icon matSuffix>add_shopping_cart</mat-icon>
         <mat-autocomplete #autoProducto="matAutocomplete" [displayWith]="mostrarProducto" (optionSelected)="agregarProducto($event)">
           @for (p of productosEncontrados(); track p.id) {
-            <mat-option [value]="p">
+            <mat-option [value]="p" [disabled]="p.precioVenta <= 0">
               {{ p.codigo }} — {{ p.nombre }}
-              <span class="remision-form__precio-opcion">{{ p.precioVenta | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+              <span class="remision-form__precio-opcion">
+                @if (p.precioVenta > 0) {
+                  {{ p.precioVenta | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                } @else {
+                  sin precio
+                }
+                @if (p.existencia !== null) { · hay {{ p.existencia }} }
+              </span>
             </mat-option>
           }
         </mat-autocomplete>
@@ -95,7 +105,12 @@
               @for (l of lineas(); track l.productoId) {
                 <tr>
                   <td data-label="Código">{{ l.codigo }}</td>
-                  <td data-label="Producto">{{ l.nombre }}</td>
+                  <td data-label="Producto">
+                    {{ l.nombre }}
+                    @if (l.existencia !== null && l.cantidad > l.existencia) {
+                      <span class="remision-form__alerta">Solo hay {{ l.existencia }} en bodega</span>
+                    }
+                  </td>
                   <td data-label="Cant." class="num">
                     <input
                       class="remision-form__cantidad"

@@ -1,4 +1,4 @@
-export type Rol = 'Admin' | 'Operador';
+export type Rol = 'Admin' | 'Operador' | 'Sincronizador';
 
 export interface Usuario {
   id: number;
