@@ -34,13 +34,20 @@ UltimaVenta AS (
       AND i.Cantidad > 0 AND i.MontoMonetarioUnitario > 0
 )
 SELECT p.IdInventario, p.[CódigoInventario] AS Codigo, p.[Descripción] AS Nombre, p.UnidadDeMedida AS Unidad,
+       p.IdInventarioClase AS Clase,
        CAST(ROUND(p.Iva * 100, 0) AS int) AS IvaPorc,
-       CONVERT(varchar(40), CAST(ISNULL(s.Existencia, 0) AS decimal(18,4))) AS ExistenciaUno,
+       -- Un servicio no tiene stock: se deja vacío para que la app no muestre un saldo sin sentido.
+       CASE WHEN p.IdInventarioClase = 2 THEN NULL
+            ELSE CONVERT(varchar(40), CAST(ISNULL(s.Existencia, 0) AS decimal(18,4))) END AS ExistenciaUno,
        CONVERT(varchar(40), CAST(u.PrecioUltimaVenta AS decimal(18,2))) AS PrecioUltimaVenta
 FROM dbo.Inventarios p
 LEFT JOIN Stock s ON s.IdInventario = p.IdInventario
 LEFT JOIN UltimaVenta u ON u.IdInventario = p.IdInventario AND u.rn = 1
+-- Solo lo que se vende: Producto (1) o Servicio (2) que se haya vendido alguna vez o tenga existencia.
+-- Se dejan por fuera gastos, activos fijos, diferidos, etc. y el catálogo sin movimiento.
 WHERE p.Activo <> 0
+  AND p.IdInventarioClase IN (1, 2)
+  AND (u.IdInventario IS NOT NULL OR ISNULL(s.Existencia, 0) <> 0)
 ORDER BY p.[CódigoInventario];`;
 
 @Component({
