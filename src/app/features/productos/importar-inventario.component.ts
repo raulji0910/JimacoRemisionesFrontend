@@ -85,6 +85,7 @@ export class ImportarInventarioComponent {
   readonly nombreArchivo = signal<string | null>(null);
   readonly filas = signal<ImportarInventarioFila[]>([]);
   readonly errores = signal<string[]>([]);
+  readonly notas = signal<string[]>([]);
   readonly importando = signal(false);
   readonly progreso = signal(0);
   readonly resultado = signal<ImportarInventarioResultado | null>(null);
@@ -119,6 +120,7 @@ export class ImportarInventarioComponent {
     const leido = leerInventarioCsv(texto);
     this.filas.set(leido.filas);
     this.errores.set(leido.errores);
+    this.notas.set(leido.notas);
   }
 
   async importar(): Promise<void> {

@@ -39,6 +39,15 @@
     margin: 1rem 0 0.5rem;
   }
 
+  &__aviso-info {
+    margin: 0.5rem 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    background: var(--mat-sys-secondary-container);
+    color: var(--mat-sys-on-secondary-container);
+    font-size: 0.85rem;
+  }
+
   &__errores {
     padding: 0.5rem 0.75rem;
     border-radius: 8px;

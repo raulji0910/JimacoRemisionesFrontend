@@ -6,6 +6,8 @@ export interface ResultadoCsv {
   errores: string[];
   // Columnas que el archivo trae y se reconocieron.
   columnas: string[];
+  // Avisos informativos (no son errores), ej. que el archivo venía sin encabezado.
+  notas: string[];
 }
 
 // Alias aceptados por columna (comparados sin tildes, minúsculas y sin símbolos).
@@ -63,7 +65,9 @@ export function parsearCsv(texto: string, delimitador: string): string[][] {
       continue;
     }
 
-    if (c === '"') entreComillas = true;
+    // Una comilla solo abre un texto entre comillas si está al INICIO del campo. En medio de un campo
+    // es una comilla literal: los nombres de ferretería traen pulgadas (16", 3/4") y SSMS las deja tal cual.
+    if (c === '"' && campo === '') entreComillas = true;
     else if (c === delimitador) {
       fila.push(campo);
       campo = '';
@@ -116,12 +120,26 @@ function parsearActivo(valor: string | undefined): boolean {
   return !(t === '0' || t === 'false' || t === 'no' || t === 'n');
 }
 
+// Orden de columnas de la consulta de exportación (con y sin la columna Clase). SSMS guarda el CSV sin
+// encabezado por defecto; si el archivo empieza directo con datos se asume este orden.
+const ORDEN_CON_CLASE = ['idWorldOffice', 'codigo', 'nombre', 'unidad', 'clase', 'iva', 'existencia', 'precio'];
+const ORDEN_SIN_CLASE = ['idWorldOffice', 'codigo', 'nombre', 'unidad', 'iva', 'existencia', 'precio'];
+
+function columnasPorPosicion(primeraFila: string[]): Record<string, number> | null {
+  const id = parsearNumero(primeraFila[0]);
+  if (id === null || !Number.isInteger(id) || id <= 0 || primeraFila.length < ORDEN_SIN_CLASE.length) return null;
+
+  const orden = primeraFila.length >= ORDEN_CON_CLASE.length ? ORDEN_CON_CLASE : ORDEN_SIN_CLASE;
+  return Object.fromEntries(orden.map((campo, pos) => [campo, pos]));
+}
+
 export function leerInventarioCsv(texto: string): ResultadoCsv {
   const limpio = texto.replace(/^﻿/, '');
   const primeraLinea = limpio.split(/\r?\n/, 1)[0] ?? '';
   const filas = parsearCsv(limpio, detectarDelimitador(primeraLinea));
 
-  if (filas.length < 2) return { filas: [], errores: ['El archivo no tiene datos (solo encabezado o está vacío).'], columnas: [] };
+  const notas: string[] = [];
+  if (filas.length < 1) return { filas: [], errores: ['El archivo está vacío.'], columnas: [], notas };
 
   const encabezado = filas[0].map(normalizar);
   const indice: Record<string, number> = {};
@@ -130,19 +148,37 @@ export function leerInventarioCsv(texto: string): ResultadoCsv {
     if (pos >= 0) indice[campo] = pos;
   }
 
-  const faltan = ['idWorldOffice', 'codigo', 'nombre'].filter((c) => indice[c] === undefined);
+  let faltan = ['idWorldOffice', 'codigo', 'nombre'].filter((c) => indice[c] === undefined);
+  let primeraFilaDatos = 1;
+
+  if (faltan.length > 0) {
+    // ¿Será un archivo sin encabezado (la primera fila ya son datos)?
+    const porPosicion = columnasPorPosicion(filas[0]);
+    if (porPosicion) {
+      for (const campo of Object.keys(indice)) delete indice[campo];
+      Object.assign(indice, porPosicion);
+      primeraFilaDatos = 0;
+      faltan = [];
+      notas.push('El archivo no traía fila de encabezados; se asumió el orden de la consulta (IdInventario, Codigo, Nombre, Unidad, Clase, IvaPorc, ExistenciaUno, PrecioUltimaVenta).');
+    }
+  }
+
   if (faltan.length > 0) {
     return {
       filas: [],
-      errores: [`Faltan columnas obligatorias: ${faltan.join(', ')}. Se esperan: IdInventario, Codigo, Nombre (y opcionales Unidad, IvaPorc, Activo, ExistenciaUno, PrecioUltimaVenta).`],
-      columnas: Object.keys(indice)
+      errores: [`Faltan columnas obligatorias: ${faltan.join(', ')}. Se esperan: IdInventario, Codigo, Nombre (y opcionales Unidad, IvaPorc, Activo, ExistenciaUno, PrecioUltimaVenta). Guarda el CSV incluyendo los encabezados.`],
+      columnas: Object.keys(indice),
+      notas
     };
   }
+
+  if (filas.length <= primeraFilaDatos)
+    return { filas: [], errores: ['El archivo no tiene datos (solo encabezado).'], columnas: Object.keys(indice), notas };
 
   const resultado: ImportarInventarioFila[] = [];
   const errores: string[] = [];
 
-  for (let i = 1; i < filas.length; i++) {
+  for (let i = primeraFilaDatos; i < filas.length; i++) {
     const f = filas[i];
     const celda = (campo: string): string | undefined => (indice[campo] === undefined ? undefined : f[indice[campo]]);
 
@@ -170,5 +206,5 @@ export function leerInventarioCsv(texto: string): ResultadoCsv {
     });
   }
 
-  return { filas: resultado, errores, columnas: Object.keys(indice) };
+  return { filas: resultado, errores, columnas: Object.keys(indice), notas };
 }

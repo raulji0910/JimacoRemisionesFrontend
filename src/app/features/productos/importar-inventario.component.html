@@ -42,6 +42,10 @@
           {{ conPrecio() | number }} con precio.
         </p>
 
+        @for (nota of notas(); track nota) {
+          <p class="importar__aviso-info">{{ nota }}</p>
+        }
+
         @if (errores().length > 0) {
           <div class="importar__errores">
             <strong>{{ errores().length }} fila(s) con problemas (se omitirán):</strong>
