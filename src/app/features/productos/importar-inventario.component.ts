@@ -18,14 +18,19 @@ const TAMANO_LOTE = 500;
 
 // Consulta de SOLO LECTURA para exportar el inventario de World Office desde SSMS. Los números salen como
 // texto (CONVERT) para que el separador decimal sea siempre el punto, sin importar la configuración regional.
-const CONSULTA_EXPORTACION = `WITH Stock AS (
+const CONSULTA_EXPORTACION = `USE [JIMACO 2023];
+GO
+-- Cuántos meses hacia atrás cuenta una venta como "reciente" (ponlo más grande para cargar más catálogo).
+DECLARE @MesesVentas int = 12;
+
+WITH Stock AS (
     SELECT IdInventario, SUM(Existencia) AS Existencia
     FROM dbo.Vista_ExistenciasPorBodegas
     WHERE IdBodegaInventario = N'Uno'
     GROUP BY IdInventario
 ),
 UltimaVenta AS (
-    SELECT i.IdInventario, i.MontoMonetarioUnitario AS PrecioUltimaVenta,
+    SELECT i.IdInventario, i.MontoMonetarioUnitario AS PrecioUltimaVenta, a.Fecha AS FechaUltimaVenta,
            ROW_NUMBER() OVER (PARTITION BY i.IdInventario ORDER BY a.Fecha DESC, i.[Renglón] DESC) AS rn
     FROM dbo.CCA_M_Inventarios i
     JOIN dbo.[CuentasContables - Asientos] a ON a.IdAsientoContable = i.IdAsientoContable
@@ -43,11 +48,14 @@ SELECT p.IdInventario, p.[CódigoInventario] AS Codigo, p.[Descripción] AS Nomb
 FROM dbo.Inventarios p
 LEFT JOIN Stock s ON s.IdInventario = p.IdInventario
 LEFT JOIN UltimaVenta u ON u.IdInventario = p.IdInventario AND u.rn = 1
--- Solo lo que se vende: Producto (1) o Servicio (2) que se haya vendido alguna vez o tenga existencia.
--- Se dejan por fuera gastos, activos fijos, diferidos, etc. y el catálogo sin movimiento.
 WHERE p.Activo <> 0
+  -- Solo Producto (1) o Servicio (2): fuera gastos, activos fijos, diferidos, etc.
   AND p.IdInventarioClase IN (1, 2)
-  AND (u.IdInventario IS NOT NULL OR ISNULL(s.Existencia, 0) <> 0)
+  -- Fuera los ítems que son cuentas contables (código solo con números) y los de exportación (EX-).
+  AND p.[CódigoInventario] LIKE '%[^0-9]%'
+  AND p.[CódigoInventario] NOT LIKE 'EX-%'
+  -- Solo lo que está vivo: vendido en los últimos meses o con existencia.
+  AND (u.FechaUltimaVenta >= DATEADD(MONTH, -@MesesVentas, GETDATE()) OR ISNULL(s.Existencia, 0) > 0)
 ORDER BY p.[CódigoInventario];`;
 
 @Component({
