@@ -29,7 +29,7 @@ interface Linea {
   precioUnitario: number;
   iva: number;
   cantidad: number;
-  // Existencia en la bodega de venta (World Office) al agregarla; null = sin dato.
+  // Disponible (existencia de World Office menos lo ya vendido en esta app) al agregarla; null = sin dato.
   existencia: number | null;
 }
 
@@ -224,7 +224,7 @@ export class RemisionFormComponent implements OnInit {
           precioUnitario: producto.precioVenta,
           iva: producto.iva,
           cantidad: 1,
-          existencia: producto.existencia
+          existencia: producto.disponible
         }
       ];
     });

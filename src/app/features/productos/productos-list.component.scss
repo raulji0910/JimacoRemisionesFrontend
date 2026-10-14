@@ -15,6 +15,38 @@
     }
   }
 
+  &__acciones {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__estado {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+    font-size: 0.88rem;
+
+    &--vacio {
+      background: #ffe9b8;
+      color: #5c3d00;
+    }
+  }
+
+  &__sin-precio {
+    margin-left: auto;
+    font-weight: 500;
+  }
+
+  &__agotado {
+    color: var(--mat-sys-error);
+  }
+
   &__buscador {
     width: 100%;
     max-width: 420px;

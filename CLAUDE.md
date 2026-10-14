@@ -27,7 +27,7 @@ npx ng serve                               # lee apiUrl de src/environments/envi
 ```
 
 ## Versionado
-En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.2.0`).
+En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.3.0`).
 
 ## Datos que vienen de World Office
-La pantalla Productos muestra la **existencia** en la bodega de venta (sincronizada, "—" = sin dato) y marca **"Sin precio"** los productos nuevos de WO: no se pueden agregar a una remisión (opción deshabilitada) hasta que se les asigne precio. Al armar una remisión se avisa si la cantidad supera la existencia (no bloquea). Un comprador traído de WO puede no tener correo: la remisión no se puede crear hasta editarlo. Rol nuevo `Sincronizador` (usuario de servicio, ver CLAUDE.md del backend).
+La pantalla Productos muestra la **existencia** en la bodega de venta (sincronizada, "—" = sin dato) y marca **"Sin precio"** los productos nuevos de WO: no se pueden agregar a una remisión (opción deshabilitada) hasta que se les asigne precio. Al armar una remisión se avisa si la cantidad supera la existencia (no bloquea). Un comprador traído de WO puede no tener correo: la remisión no se puede crear hasta editarlo. Productos muestra Existencia WO / Reservado / Disponible y la hora de la última foto de WO; `Productos → Importar inventario` (solo Admin, `features/productos/importar-inventario.component`, parser en `core/utils/csv-inventario.ts`: acepta UTF-8 o Windows-1252, coma o punto y coma, punto o coma decimal) carga el CSV exportado de WO en lotes de 500. Al armar una remisión se usa el **Disponible** (no la existencia cruda). El detalle de una remisión pagada permite "Registrar en World Office" (anota el documento de WO). Rol nuevo `Sincronizador` (usuario de servicio, ver CLAUDE.md del backend).

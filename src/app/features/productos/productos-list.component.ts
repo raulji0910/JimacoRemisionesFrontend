@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +13,9 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ProductoService } from '../../core/services/producto.service';
+import { InventarioService } from '../../core/services/inventario.service';
+import { AuthService } from '../../core/services/auth.service';
+import { EstadoInventario } from '../../core/models/inventario.model';
 import { Producto } from '../../core/models/producto.model';
 import { ProductoFormDialogComponent } from './producto-form-dialog.component';
 
@@ -22,6 +26,8 @@ import { ProductoFormDialogComponent } from './producto-form-dialog.component';
     FormsModule,
     CurrencyPipe,
     DecimalPipe,
+    DatePipe,
+    RouterLink,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
@@ -38,8 +44,12 @@ export class ProductosListComponent implements OnInit {
   private readonly productoService = inject(ProductoService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly inventarioService = inject(InventarioService);
+  readonly esAdmin = inject(AuthService).esAdmin;
 
-  readonly columnas = ['codigo', 'nombre', 'precioVenta', 'iva', 'existencia', 'origen', 'estado'];
+  readonly estadoInventario = signal<EstadoInventario | null>(null);
+
+  readonly columnas = ['codigo', 'nombre', 'precioVenta', 'iva', 'existencia', 'reservado', 'disponible', 'origen', 'estado'];
   readonly productos = signal<Producto[]>([]);
   readonly total = signal(0);
   readonly pageIndex = signal(0);
@@ -49,6 +59,13 @@ export class ProductosListComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarPagina();
+    this.inventarioService.estado().subscribe((e) => this.estadoInventario.set(e));
+  }
+
+  // Minutos desde la última foto de existencias de WO (null si nunca se cargó).
+  minutosDesdeFoto(): number | null {
+    const foto = this.estadoInventario()?.ultimaFotoEn;
+    return foto ? Math.max(0, Math.round((Date.now() - new Date(foto).getTime()) / 60000)) : null;
   }
 
   buscar(): void {

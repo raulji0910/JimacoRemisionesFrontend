@@ -45,6 +45,7 @@ export class RemisionDetalleComponent implements OnInit {
   readonly esPendiente = computed(() => this.remision()?.estadoPago === 'Pendiente');
   readonly esPagada = computed(() => this.remision()?.estadoPago === 'Pagada');
   readonly esAnulada = computed(() => this.remision()?.estadoPago === 'Anulada');
+  readonly pendienteDeWo = computed(() => this.esPagada() && this.remision()?.sincronizacionWo !== 'Sincronizada');
   readonly entregaPendiente = computed(() => this.esPagada() && this.remision()?.estadoEntrega === 'Pendiente');
   // Pagada: solo admin anula (regla del backend). Pendiente: cualquiera.
   readonly puedeAnular = computed(() => this.esPendiente() || (this.esPagada() && this.authService.esAdmin));
@@ -134,6 +135,31 @@ export class RemisionDetalleComponent implements OnInit {
         { duration: 8000 }
       );
     }
+  }
+
+  // Mientras la app no escribe sola en World Office, alguien registra la venta allá a mano y aquí se
+  // anota con qué documento. Desde ahí, una vez que la foto de existencias de WO sea posterior, deja de
+  // restarse del "disponible".
+  registrarEnWo(): void {
+    const r = this.remision();
+    if (!r) return;
+
+    this.dialog
+      .open(TextoDialogComponent, {
+        width: '28rem',
+        data: {
+          titulo: 'Registrar en World Office',
+          mensaje: `Anota el documento de World Office donde registraste la venta de ${r.consecutivoFormateado}. Mientras no lo hagas, estas unidades se siguen restando del disponible.`,
+          etiqueta: 'Documento de WO (ej. REM 29301)',
+          obligatorio: true,
+          textoConfirmar: 'Marcar como registrada'
+        }
+      })
+      .afterClosed()
+      .subscribe((documento: string | null) => {
+        if (!documento) return;
+        this.ejecutar(this.remisionService.registrarEnWo(r.id, documento), 'Marcada como registrada en World Office', 'No se pudo marcar la remisión.');
+      });
   }
 
   marcarEntregada(): void {

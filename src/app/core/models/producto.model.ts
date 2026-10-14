@@ -14,6 +14,10 @@ export interface Producto {
   // Existencia en la bodega de venta según la última sincronización con World Office (null = sin dato).
   existencia: number | null;
   existenciaActualizadaEn: string | null;
+  // Unidades vendidas desde esta app que World Office todavía no refleja.
+  reservado: number | null;
+  // Existencia de WO menos lo reservado: la cifra que se mira al vender (null = sin dato).
+  disponible: number | null;
 }
 
 export interface ProductoCrear {

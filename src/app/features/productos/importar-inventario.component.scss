@@ -1,0 +1,94 @@
+.importar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  mat-card-content {
+    padding-top: 0.75rem;
+  }
+
+  &__consulta {
+    max-height: 16rem;
+    overflow: auto;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: var(--mat-sys-surface-container-high);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    white-space: pre;
+  }
+
+  &__nota {
+    font-size: 0.85rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &__resumen {
+    margin: 1rem 0 0.5rem;
+  }
+
+  &__errores {
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    background: var(--mat-sys-error-container);
+    color: var(--mat-sys-on-error-container);
+    font-size: 0.85rem;
+
+    ul {
+      margin: 0.25rem 0 0;
+      padding-left: 1.25rem;
+    }
+  }
+
+  &__tabla-contenedor {
+    overflow-x: auto;
+    margin-top: 0.75rem;
+  }
+
+  &__tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+
+    th,
+    td {
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+
+    .num {
+      text-align: right;
+      white-space: nowrap;
+    }
+  }
+
+  &__opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  &__fecha {
+    width: 100%;
+    max-width: 26rem;
+  }
+
+  &__fallo {
+    background: var(--mat-sys-error-container);
+    color: var(--mat-sys-on-error-container);
+  }
+}

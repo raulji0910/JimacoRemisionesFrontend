@@ -49,6 +49,13 @@
         </button>
       }
 
+      @if (pendienteDeWo()) {
+        <button mat-stroked-button (click)="registrarEnWo()" [disabled]="ocupado()">
+          <mat-icon>inventory_2</mat-icon>
+          Registrar en World Office
+        </button>
+      }
+
       @if (entregaPendiente()) {
         <button mat-flat-button color="primary" (click)="marcarEntregada()" [disabled]="ocupado()">
           <mat-icon>inventory</mat-icon>
@@ -139,7 +146,7 @@
               @switch (r.sincronizacionWo) {
                 @case ('Sincronizada') { descontado ({{ r.documentoWorldOffice }}) }
                 @case ('Error') { error — {{ r.errorSincronizacionWo }} }
-                @default { pendiente de descontar }
+                @default { pendiente de registrar{{ esPagada() ? ' (sigue restando del disponible)' : '' }} }
               }
             </span>
           </div>

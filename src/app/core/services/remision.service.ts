@@ -59,6 +59,11 @@ export class RemisionService {
     return this.http.post<RemisionDetalle>(`${this.baseUrl}/${id}/entregar`, {});
   }
 
+  // Marca que la venta ya quedó registrada en World Office con ese documento (ej. "REM 29301").
+  registrarEnWo(id: number, documento: string): Observable<RemisionDetalle> {
+    return this.http.post<RemisionDetalle>(`${this.baseUrl}/${id}/registrada-en-wo`, { documento });
+  }
+
   anular(id: number, motivo: string): Observable<RemisionDetalle> {
     return this.http.post<RemisionDetalle>(`${this.baseUrl}/${id}/anular`, { motivo });
   }

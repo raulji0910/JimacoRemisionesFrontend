@@ -78,7 +78,7 @@
                 } @else {
                   sin precio
                 }
-                @if (p.existencia !== null) { · hay {{ p.existencia }} }
+                @if (p.disponible !== null) { · disponible {{ p.disponible }} }
               </span>
             </mat-option>
           }
@@ -108,7 +108,7 @@
                   <td data-label="Producto">
                     {{ l.nombre }}
                     @if (l.existencia !== null && l.cantidad > l.existencia) {
-                      <span class="remision-form__alerta">Solo hay {{ l.existencia }} en bodega</span>
+                      <span class="remision-form__alerta">Solo hay {{ l.existencia }} disponibles</span>
                     }
                   </td>
                   <td data-label="Cant." class="num">

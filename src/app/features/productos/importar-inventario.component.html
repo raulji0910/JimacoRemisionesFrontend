@@ -1,0 +1,154 @@
+<div class="importar">
+  <div class="importar__header">
+    <h2>Importar inventario de World Office</h2>
+    <a mat-button routerLink="/productos">
+      <mat-icon>arrow_back</mat-icon>
+      Volver a Productos
+    </a>
+  </div>
+
+  <mat-card>
+    <mat-card-header><mat-card-title>1. Exportar desde World Office</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <p>
+        Ejecuta esta consulta en SSMS (es de solo lectura) y guarda el resultado como CSV
+        (clic derecho en los resultados → <em>Save Results As…</em>). Conviene correrla fuera de hora pico.
+      </p>
+      <pre class="importar__consulta">{{ consulta }}</pre>
+      <button mat-stroked-button (click)="copiarConsulta()">
+        <mat-icon>content_copy</mat-icon>
+        Copiar consulta
+      </button>
+      <p class="importar__nota">
+        Trae los productos activos, su existencia en la bodega <strong>Uno</strong> y el último precio al que se
+        vendieron (remisión o factura). Los productos sin ventas previas quedan <strong>sin precio</strong> y no se podrán
+        vender hasta asignárselo.
+      </p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header><mat-card-title>2. Subir el archivo</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <input id="archivo-inventario" type="file" accept=".csv,text/csv,.txt" (change)="alElegirArchivo($event)" />
+
+      @if (nombreArchivo(); as nombre) {
+        <p class="importar__resumen">
+          <strong>{{ nombre }}</strong>:
+          {{ filas().length | number }} productos leídos,
+          {{ conExistencia() | number }} con existencia,
+          {{ conPrecio() | number }} con precio.
+        </p>
+
+        @if (errores().length > 0) {
+          <div class="importar__errores">
+            <strong>{{ errores().length }} fila(s) con problemas (se omitirán):</strong>
+            <ul>
+              @for (e of errores().slice(0, 6); track e) {
+                <li>{{ e }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (muestra().length > 0) {
+          <div class="importar__tabla-contenedor">
+            <table class="importar__tabla">
+              <thead>
+                <tr>
+                  <th>IdInventario</th>
+                  <th>Código</th>
+                  <th>Nombre</th>
+                  <th class="num">IVA</th>
+                  <th class="num">Existencia</th>
+                  <th class="num">Precio</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of muestra(); track f.idWorldOffice) {
+                  <tr>
+                    <td>{{ f.idWorldOffice }}</td>
+                    <td>{{ f.codigo }}</td>
+                    <td>{{ f.nombre }}</td>
+                    <td class="num">{{ f.iva }}%</td>
+                    <td class="num">{{ f.existencia !== null ? (f.existencia | number: '1.0-2') : '—' }}</td>
+                    <td class="num">{{ f.precio !== null ? (f.precio | number: '1.0-0') : 'sin precio' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="importar__nota">Vista previa de las primeras {{ muestra().length }} filas.</p>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (filas().length > 0) {
+    <mat-card>
+      <mat-card-header><mat-card-title>3. Importar</mat-card-title></mat-card-header>
+      <mat-card-content class="importar__opciones">
+        <mat-form-field appearance="outline" class="importar__fecha">
+          <mat-label>Hora en que se exportó de World Office</mat-label>
+          <input matInput type="datetime-local" [(ngModel)]="exportadoEn" name="exportadoEn" />
+          <mat-hint>
+            Es la hora de esta "foto" del inventario. Se propone la de modificación del archivo; si lo exportaste antes,
+            pon la hora real.
+          </mat-hint>
+        </mat-form-field>
+
+        <mat-checkbox [(ngModel)]="actualizarPrecios" name="actualizarPrecios">
+          También reemplazar el precio de los productos que ya tienen uno
+        </mat-checkbox>
+        <p class="importar__nota">
+          Si no lo marcas, el precio solo se asigna a los productos que todavía no tienen. Reimportar nunca borra
+          productos y se puede repetir para refrescar las existencias.
+        </p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-flat-button color="primary" (click)="importar()" [disabled]="importando()">
+          <mat-icon>upload</mat-icon>
+          {{ importando() ? 'Importando…' : 'Importar ' + (filas().length | number) + ' productos' }}
+        </button>
+      </mat-card-actions>
+      @if (importando()) {
+        <mat-progress-bar mode="determinate" [value]="progreso()" />
+      }
+    </mat-card>
+  }
+
+  @if (falloMensaje(); as mensaje) {
+    <mat-card class="importar__fallo">
+      <mat-card-content>{{ mensaje }}</mat-card-content>
+    </mat-card>
+  }
+
+  @if (resultado(); as r) {
+    <mat-card class="importar__listo">
+      <mat-card-header><mat-card-title>Listo</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <ul>
+          <li>{{ r.productosCreados | number }} productos nuevos, {{ r.productosActualizados | number }} actualizados.</li>
+          <li>{{ r.existenciasCargadas | number }} existencias cargadas o cambiadas.</li>
+          <li>{{ r.preciosAsignados | number }} precios asignados.</li>
+          @if (r.omitidos > 0) {
+            <li>{{ r.omitidos | number }} omitidos.</li>
+          }
+        </ul>
+        @if (r.avisos.length > 0) {
+          <details>
+            <summary>{{ r.avisos.length }} aviso(s)</summary>
+            <ul>
+              @for (a of r.avisos; track a) {
+                <li>{{ a }}</li>
+              }
+            </ul>
+          </details>
+        }
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <a mat-flat-button color="primary" routerLink="/productos">Ver productos</a>
+      </mat-card-actions>
+    </mat-card>
+  }
+</div>
