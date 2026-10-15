@@ -65,7 +65,7 @@
     </mat-card-header>
     <mat-card-content>
       <mat-form-field appearance="outline" class="remision-form__campo-grande">
-        <mat-label>Agregar producto por código o nombre</mat-label>
+        <mat-label>Agregar producto</mat-label>
         <input id="buscar-producto" matInput [formControl]="buscadorProducto" [matAutocomplete]="autoProducto" />
         <mat-icon matSuffix>add_shopping_cart</mat-icon>
         <mat-autocomplete #autoProducto="matAutocomplete" [displayWith]="mostrarProducto" (optionSelected)="agregarProducto($event)">
@@ -201,11 +201,16 @@
         <div class="fila total"><span>TOTAL</span><strong>{{ calculo().totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
       </div>
     </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-flat-button color="primary" (click)="guardar()" [disabled]="!puedeGuardar()">
-        <mat-icon>save</mat-icon>
-        {{ editandoId() ? 'Guardar cambios' : 'Crear remisión' }}
-      </button>
-    </mat-card-actions>
   </mat-card>
+
+  <div class="barra-accion">
+    <div class="barra-accion__total">
+      <span>Total</span>
+      <strong>{{ calculo().totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+    </div>
+    <button mat-flat-button color="primary" (click)="guardar()" [disabled]="!puedeGuardar()">
+      <mat-icon>save</mat-icon>
+      {{ editandoId() ? 'Guardar cambios' : 'Crear remisión' }}
+    </button>
+  </div>
 </div>

@@ -80,3 +80,46 @@ table {
 .productos__acciones-celda {
   white-space: nowrap;
 }
+
+// Móvil: cada producto es una tarjeta (nombre, código/estado, precio/stock, acciones).
+@media (max-width: 768px) {
+  table.tabla-responsiva tr.mat-mdc-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'nom nom'
+      'cod est'
+      'pre sto'
+      'acc acc';
+    gap: 0.2rem 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: 12px;
+    background: var(--mat-sys-surface-container-low);
+  }
+
+  table.tabla-responsiva td.mat-mdc-cell {
+    padding: 0;
+    min-height: 0;
+    justify-content: flex-start;
+
+    &::before {
+      content: none;
+    }
+  }
+
+  table.tabla-responsiva td.mat-mdc-cell[data-label='Stock']::before {
+    content: 'Stock';
+    font-weight: 400;
+    font-size: 0.85rem;
+  }
+
+  td[data-label='Nombre'] { grid-area: nom; font-weight: 600; }
+  td[data-label='Código'] { grid-area: cod; font-size: 0.8rem; color: var(--mat-sys-on-surface-variant); }
+  td[data-label='Estado'] { grid-area: est; justify-self: end; }
+  td[data-label='Precio (sin IVA)'] { grid-area: pre; }
+  td[data-label='IVA'] { display: none !important; }
+  td[data-label='Stock'] { grid-area: sto; justify-self: end; justify-content: flex-end; gap: 0.4rem !important; font-size: 1.05rem; font-weight: 700; }
+  td.productos__acciones-celda { grid-area: acc; justify-content: flex-end !important; gap: 0.25rem !important; }
+}

@@ -19,6 +19,12 @@
     align-self: flex-start;
     max-width: 100%;
     overflow-x: auto;
+    scrollbar-width: none;
+
+    .mat-button-toggle {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
   }
 
   &__buscador {
@@ -49,4 +55,48 @@
 
 table {
   width: 100%;
+}
+
+// Móvil: cada remisión es una tarjeta compacta de 4 líneas en vez de 6 filas etiqueta/valor.
+@media (max-width: 768px) {
+  .remisiones__buscador {
+    max-width: none;
+  }
+
+  table.tabla-responsiva tbody {
+    display: block;
+  }
+
+  table.tabla-responsiva tr.mat-mdc-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'num pago'
+      'comp comp'
+      'fecha total'
+      'ent correo';
+    gap: 0.15rem 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: 12px;
+    background: var(--mat-sys-surface-container-low);
+  }
+
+  table.tabla-responsiva td.mat-mdc-cell {
+    padding: 0;
+    min-height: 0;
+
+    &::before {
+      content: none;
+    }
+  }
+
+  .rem-numero { grid-area: num; font-weight: 700; font-size: 1.05rem; }
+  .rem-pago { grid-area: pago; justify-self: end; }
+  .rem-comprador { grid-area: comp; display: block !important; }
+  .rem-fecha { grid-area: fecha; font-size: 0.8rem; color: var(--mat-sys-on-surface-variant); }
+  .rem-total { grid-area: total; justify-self: end; font-weight: 700; font-size: 1.1rem; }
+  .rem-entrega { grid-area: ent; font-size: 0.8rem; color: var(--mat-sys-on-surface-variant); }
+  .rem-correo { grid-area: correo; justify-self: end; }
 }

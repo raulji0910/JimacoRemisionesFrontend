@@ -19,7 +19,7 @@ Angular 22, componentes standalone (sin NgModules), Angular Material (tema M3) +
 
 **Stock en la remisión**: las opciones de producto sin stock salen deshabilitadas ("sin stock"); si una línea pide más de lo que hay se muestra "Solo hay N en stock" y el botón de crear se deshabilita. El servidor valida igual (409).
 
-**Tema Jimaco**: `src/theme-colors.scss` (verde `#1c6521`) copiado de Jimaco Aprobaciones; logo y favicon en `public/`. **Tablas responsivas**: toda `<table mat-table>` lleva la clase `tabla-responsiva` y cada `<td>` un `data-label` (el apilado móvil está en `styles.scss`).
+**Tema Jimaco**: `src/theme-colors.scss` (verde `#1c6521`) copiado de Jimaco Aprobaciones; logo y favicon en `public/`. **Móvil primero** (la app se usa sobre todo en celulares): toda `<table mat-table>` lleva `tabla-responsiva` y cada `<td>` un `data-label`; el apilado genérico está en `styles.scss`, y las listas de remisiones/productos/compradores lo reemplazan por **tarjetas compactas** con `grid-template-areas` en su propio `.scss` (ojo: el `<tbody>` lo crea Material sin el atributo de encapsulación, así que su regla `display:block` va en `styles.scss`). El formulario de remisión usa una **barra de acción fija al pie** (`.barra-accion`: total + botón) y el detalle pone la acción principal a ancho completo. Paginador en español (`core/utils/paginador-es.ts`). PWA instalable (`public/manifest.webmanifest`, `icon-192/512.png`, `theme-color`). Verificar siempre a 390 px con Playwright (ver memoria `feedback_visual_verification_playwright`).
 
 **nginx**: `index.html` va con `Cache-Control: no-cache` (si no, tras una actualización el navegador puede seguir con el `index.html` viejo y cargar JavaScript de la versión anterior); los `.js/.css` con hash se guardan 30 días.
 
@@ -34,4 +34,4 @@ npx ng serve                               # lee apiUrl de src/environments/envi
 ```
 
 ## Versionado
-En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.4.0`).
+En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.6.0`).

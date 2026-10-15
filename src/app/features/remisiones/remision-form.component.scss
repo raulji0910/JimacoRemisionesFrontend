@@ -149,7 +149,7 @@
   }
 }
 
-// Móvil: cada línea de producto se apila como tarjeta.
+// Móvil: cada línea de producto es una tarjeta: nombre arriba, cantidad / subtotal / quitar abajo.
 @media (max-width: 640px) {
   .remision-form__tabla {
     thead {
@@ -158,27 +158,38 @@
 
     tr {
       display: grid;
-      grid-template-columns: 1fr auto;
-      padding: 0.5rem 0;
+      grid-template-columns: auto 1fr auto;
+      grid-template-areas:
+        'nom nom nom'
+        'cod cod cod'
+        'cant sub quitar';
+      align-items: center;
+      gap: 0.25rem 0.75rem;
+      padding: 0.75rem 0;
       border-bottom: 1px solid var(--mat-sys-outline-variant);
     }
 
     td {
       border: none;
-      padding: 0.15rem 0.25rem;
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
+      padding: 0;
 
       &::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--mat-sys-on-surface-variant);
+        content: none;
       }
     }
 
-    td:last-child::before {
-      content: none;
-    }
+    td[data-label='Producto'] { grid-area: nom; font-weight: 500; }
+    td[data-label='Código'] { grid-area: cod; font-size: 0.8rem; color: var(--mat-sys-on-surface-variant); }
+    td[data-label='Cant.'] { grid-area: cant; }
+    td[data-label='Subtotal'] { grid-area: sub; text-align: right; font-weight: 700; }
+    td[data-label='Precio'],
+    td[data-label='IVA'] { display: none; }
+    td:last-child { grid-area: quitar; }
+  }
+
+  .remision-form__cantidad {
+    width: 5rem;
+    height: 44px;
+    font-size: 1rem;
   }
 }

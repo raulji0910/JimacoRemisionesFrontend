@@ -88,6 +88,10 @@ body {
   table.tabla-responsiva {
     display: block;
 
+    tbody {
+      display: block;
+    }
+
     tr.mat-mdc-header-row {
       display: none;
     }
@@ -132,3 +136,59 @@ body {
   background-color: var(--mat-sys-error-container);
 }
 
+
+// Barra de acción fija al pie (formulario de remisión): total + botón principal siempre a mano.
+.barra-accion {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  background: var(--mat-sys-surface);
+
+  &__total {
+    display: none;
+    flex-direction: column;
+    line-height: 1.2;
+    font-size: 0.8rem;
+    color: var(--mat-sys-on-surface-variant);
+
+    strong {
+      font-size: 1.2rem;
+      color: var(--mat-sys-on-surface);
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .barra-accion {
+    margin: 0 -0.75rem;
+    padding: 0.6rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--mat-sys-outline-variant);
+    box-shadow: 0 -2px 8px rgb(0 0 0 / 8%);
+    justify-content: space-between;
+
+    &__total {
+      display: flex;
+    }
+
+    .mat-mdc-unelevated-button {
+      height: 52px;
+      flex: 1;
+      font-size: 1rem;
+    }
+  }
+
+  // Objetivos táctiles cómodos y sin zoom automático de iOS en los campos.
+  .mat-mdc-button-base {
+    min-height: 44px;
+  }
+
+  input,
+  textarea {
+    font-size: 16px;
+  }
+}

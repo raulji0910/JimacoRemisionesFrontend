@@ -16,7 +16,7 @@
   </mat-button-toggle-group>
 
   <mat-form-field appearance="outline" class="remisiones__buscador">
-    <mat-label>Buscar por número, comprador o documento</mat-label>
+    <mat-label>Buscar remisión o cliente</mat-label>
     <input id="buscar-remision" matInput [(ngModel)]="texto" (ngModelChange)="buscar()" />
     @if (texto) {
       <button matSuffix mat-icon-button aria-label="Limpiar búsqueda" (click)="limpiarBusqueda()">
@@ -34,17 +34,17 @@
   <table mat-table [dataSource]="remisiones()" class="tabla-responsiva">
     <ng-container matColumnDef="consecutivo">
       <th mat-header-cell *matHeaderCellDef>Número</th>
-      <td mat-cell *matCellDef="let r" data-label="Número">{{ r.consecutivoFormateado }}</td>
+      <td mat-cell *matCellDef="let r" data-label="Número" class="rem-numero">{{ r.consecutivoFormateado }}</td>
     </ng-container>
 
     <ng-container matColumnDef="fecha">
       <th mat-header-cell *matHeaderCellDef>Fecha</th>
-      <td mat-cell *matCellDef="let r" data-label="Fecha">{{ r.fechaCreacion | date: 'dd/MM/yyyy HH:mm' }}</td>
+      <td mat-cell *matCellDef="let r" data-label="Fecha" class="rem-fecha">{{ r.fechaCreacion | date: 'dd/MM/yyyy HH:mm' }}</td>
     </ng-container>
 
     <ng-container matColumnDef="comprador">
       <th mat-header-cell *matHeaderCellDef>Comprador</th>
-      <td mat-cell *matCellDef="let r" data-label="Comprador">
+      <td mat-cell *matCellDef="let r" data-label="Comprador" class="rem-comprador">
         {{ r.compradorNombre }}
         <span class="remisiones__documento">{{ r.compradorDocumento }}</span>
       </td>
@@ -52,12 +52,12 @@
 
     <ng-container matColumnDef="total">
       <th mat-header-cell *matHeaderCellDef>Total</th>
-      <td mat-cell *matCellDef="let r" data-label="Total">{{ r.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+      <td mat-cell *matCellDef="let r" data-label="Total" class="rem-total">{{ r.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
     </ng-container>
 
     <ng-container matColumnDef="pago">
       <th mat-header-cell *matHeaderCellDef>Pago</th>
-      <td mat-cell *matCellDef="let r" data-label="Pago">
+      <td mat-cell *matCellDef="let r" data-label="Pago" class="rem-pago">
         <mat-chip
           [class.chip--ok]="r.estadoPago === 'Pagada'"
           [class.chip--pendiente]="r.estadoPago === 'Pendiente'"
@@ -70,7 +70,7 @@
 
     <ng-container matColumnDef="entrega">
       <th mat-header-cell *matHeaderCellDef>Entrega</th>
-      <td mat-cell *matCellDef="let r" data-label="Entrega">
+      <td mat-cell *matCellDef="let r" data-label="Entrega" class="rem-entrega">
         {{ r.tipoEntrega === 'EnSitio' ? 'En sitio' : 'Envío' }} ·
         {{ r.estadoEntrega === 'Entregada' ? 'entregada' : 'pendiente' }}
       </td>
@@ -78,7 +78,7 @@
 
     <ng-container matColumnDef="correo">
       <th mat-header-cell *matHeaderCellDef>Correo</th>
-      <td mat-cell *matCellDef="let r" data-label="Correo">
+      <td mat-cell *matCellDef="let r" data-label="Correo" class="rem-correo">
         @if (r.correoEnviado) {
           <mat-icon class="remisiones__icono-ok" matTooltip="Correo enviado">mark_email_read</mat-icon>
         } @else {

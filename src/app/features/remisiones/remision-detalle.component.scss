@@ -133,3 +133,20 @@
     }
   }
 }
+
+// Móvil: la acción principal (cobrar / entregar) va primero y a todo el ancho, fácil de pulsar.
+@media (max-width: 640px) {
+  .detalle__acciones {
+    .mat-mdc-unelevated-button {
+      order: -1;
+      flex: 1 1 100%;
+      height: 52px;
+      font-size: 1rem;
+    }
+
+    .mat-mdc-outlined-button,
+    .mat-mdc-button {
+      flex: 1 1 calc(50% - 0.5rem);
+    }
+  }
+}
