@@ -1,7 +1,6 @@
 export type EstadoPago = 'Pendiente' | 'Pagada' | 'Anulada';
 export type TipoEntrega = 'EnSitio' | 'Envio';
 export type EstadoEntrega = 'Pendiente' | 'Entregada';
-export type EstadoSincronizacionWo = 'Pendiente' | 'Sincronizada' | 'Error';
 
 export interface RemisionItemEntrada {
   productoId: number;
@@ -47,7 +46,6 @@ export interface RemisionResumen {
   tipoEntrega: TipoEntrega;
   estadoEntrega: EstadoEntrega;
   correoEnviado: boolean;
-  sincronizacionWo: EstadoSincronizacionWo;
 }
 
 export interface RemisionDetalle {
@@ -75,9 +73,6 @@ export interface RemisionDetalle {
   correoEnviadoEn: string | null;
   fechaAnulacion: string | null;
   motivoAnulacion: string | null;
-  sincronizacionWo: EstadoSincronizacionWo;
-  documentoWorldOffice: string | null;
-  errorSincronizacionWo: string | null;
   items: RemisionItem[];
   subtotalItems: number;
   descuento: number;

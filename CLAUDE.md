@@ -4,17 +4,24 @@ Guía para Claude Code (claude.ai/code) en este repositorio.
 
 ## Qué es
 
-Frontend Angular de **Jimaco Remisiones** (venta directa en el punto de venta con remisión + cobro por datáfono). Habla con la API .NET del repo hermano **`Jimaco.Remisiones`** (`../Jimaco.Remisiones`), cuyo `CLAUDE.md` tiene el dominio y las reglas de negocio — leerlo primero. El `docker-compose.yml` de ese repo construye este frontend desde `../Jimaco.Remisiones.Web`, así que ambos deben estar lado a lado.
+Frontend Angular de **Jimaco Remisiones** (venta directa de un conjunto cerrado de herramientas, con remisión + cobro por datáfono + control de stock propio). Habla con la API .NET del repo hermano **`Jimaco.Remisiones`** (`../Jimaco.Remisiones`), cuyo `CLAUDE.md` tiene el dominio, el alcance (**sin integración con World Office**) y las reglas de negocio — leerlo primero. El `docker-compose.yml` de ese repo construye este frontend desde `../Jimaco.Remisiones.Web`, así que ambos deben estar lado a lado.
 
 ## Arquitectura
 
 Angular 22, componentes standalone (sin NgModules), Angular Material (tema M3) + servicios RxJS/signals, sin NgRx.
 
 - `src/app/core/` — `models/` (espejo de los DTO del backend), `services/` (un wrapper fino de `HttpClient` por recurso), `guards/`, `interceptors/` (JWT + 401), `dialogs/` (confirmación, mensaje, texto), `utils/calculos-remision.ts` (total en vivo; el oficial lo calcula el backend).
-- `src/app/features/` — `remisiones` (lista con filtros Por cobrar/Pagadas/Envíos pendientes/Anuladas, `remision-form` para crear **y** editar, `remision-detalle` con las acciones pagar / PDF / correo / entregar / anular), `productos`, `compradores`, `usuarios`, `login`.
+- `src/app/features/`:
+  - `remisiones`: lista con filtros (Por cobrar / Pagadas / Envíos pendientes / Anuladas), `remision-form` (crear **y** editar) y `remision-detalle` (pagar / PDF / correo / entregar / anular).
+  - `productos`: lista con **Stock**, diálogo crear/editar (solo Admin; el stock inicial solo al crear), **historial (kardex)** por producto (`kardex-dialog`) y **entrada/ajuste de stock** (`ajuste-stock-dialog`, solo Admin; el ajuste se hace contra "stock real contado" y exige motivo).
+  - `compradores`, `usuarios`, `login`.
 - `src/app/layout/` — shell post-login; solo aquí se lee `authService.esAdmin` para mostrar "Usuarios".
 
+**Stock en la remisión**: las opciones de producto sin stock salen deshabilitadas ("sin stock"); si una línea pide más de lo que hay se muestra "Solo hay N en stock" y el botón de crear se deshabilita. El servidor valida igual (409).
+
 **Tema Jimaco**: `src/theme-colors.scss` (verde `#1c6521`) copiado de Jimaco Aprobaciones; logo y favicon en `public/`. **Tablas responsivas**: toda `<table mat-table>` lleva la clase `tabla-responsiva` y cada `<td>` un `data-label` (el apilado móvil está en `styles.scss`).
+
+**nginx**: `index.html` va con `Cache-Control: no-cache` (si no, tras una actualización el navegador puede seguir con el `index.html` viejo y cargar JavaScript de la versión anterior); los `.js/.css` con hash se guardan 30 días.
 
 ## Comandos
 
@@ -27,7 +34,4 @@ npx ng serve                               # lee apiUrl de src/environments/envi
 ```
 
 ## Versionado
-En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.3.3`).
-
-## Datos que vienen de World Office
-La pantalla Productos muestra la **existencia** en la bodega de venta (sincronizada, "—" = sin dato) y marca **"Sin precio"** los productos nuevos de WO: no se pueden agregar a una remisión (opción deshabilitada) hasta que se les asigne precio. Al armar una remisión se avisa si la cantidad supera la existencia (no bloquea). Un comprador traído de WO puede no tener correo: la remisión no se puede crear hasta editarlo. Productos muestra Existencia WO / Reservado / Disponible y la hora de la última foto de WO; `Productos → Importar inventario` (solo Admin, `features/productos/importar-inventario.component`, parser en `core/utils/csv-inventario.ts`: acepta UTF-8 o Windows-1252, coma, punto y coma o tabulador, punto o coma decimal; **SSMS guarda el CSV SIN encabezado**, así que si la primera fila ya son datos se asume el orden de la consulta de exportación; una comilla solo abre un texto entre comillas al INICIO del campo porque los nombres traen pulgadas como `16"`) carga el CSV exportado de WO en lotes de 500. Al armar una remisión se usa el **Disponible** (no la existencia cruda). El detalle de una remisión pagada permite "Registrar en World Office" (anota el documento de WO). Rol nuevo `Sincronizador` (usuario de servicio, ver CLAUDE.md del backend).
+En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.4.0`).

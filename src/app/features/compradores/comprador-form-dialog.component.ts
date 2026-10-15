@@ -15,7 +15,7 @@ export interface CompradorFormDialogData {
   numeroDocumentoInicial?: string;
 }
 
-// Mismos códigos que World Office usa para el tipo de tercero.
+// Tipos de documento (mismos códigos que usa contabilidad al crear terceros en World Office).
 export const TIPOS_DOCUMENTO = [
   { codigo: 'CC', nombre: 'Cédula de ciudadanía' },
   { codigo: 'NIT', nombre: 'NIT' },
@@ -52,8 +52,6 @@ export class CompradorFormDialogComponent {
 
   readonly editando = this.data.comprador !== null;
   readonly tiposDocumento = TIPOS_DOCUMENTO;
-  // Un tercero que viene de World Office no cambia de documento (es su llave allá).
-  readonly documentoBloqueado = this.data.comprador?.origen === 'WorldOffice';
 
   tipoPersona: TipoPersona = this.data.comprador?.tipoPersona ?? 'Natural';
   tipoDocumento = this.data.comprador?.tipoDocumento ?? 'CC';

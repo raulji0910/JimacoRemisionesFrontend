@@ -3,10 +3,7 @@
 <mat-dialog-content class="dialogo-form">
   <mat-form-field appearance="outline" class="dialogo-form__campo">
     <mat-label>Código</mat-label>
-    <input matInput [(ngModel)]="codigo" name="codigo" required [disabled]="codigoBloqueado" />
-    @if (codigoBloqueado) {
-      <mat-hint>Viene de World Office, no se puede cambiar</mat-hint>
-    }
+    <input matInput [(ngModel)]="codigo" name="codigo" required />
   </mat-form-field>
 
   <mat-form-field appearance="outline" class="dialogo-form__campo">
@@ -21,8 +18,8 @@
 
   <div class="dialogo-form__campo dialogo-form__iva">
     <mat-form-field appearance="outline" class="dialogo-form__iva-costo">
-      <mat-label>Precio de venta (sin IVA)</mat-label>
-      <input matInput type="number" min="0" step="1" [(ngModel)]="precioVenta" name="precioVenta" required />
+      <mat-label>Precio por unidad (antes de IVA)</mat-label>
+      <input matInput type="number" min="0" step="0.01" [(ngModel)]="precioVenta" name="precioVenta" required />
       <span matTextPrefix>$&nbsp;</span>
     </mat-form-field>
 
@@ -36,9 +33,17 @@
     </mat-form-field>
   </div>
 
+  @if (!editando) {
+    <mat-form-field appearance="outline" class="dialogo-form__campo">
+      <mat-label>Stock inicial (unidades)</mat-label>
+      <input matInput type="number" min="0" step="1" [(ngModel)]="stockInicial" name="stockInicial" />
+      <mat-hint>Queda como "Stock inicial" en el historial del producto</mat-hint>
+    </mat-form-field>
+  }
+
   <mat-form-field appearance="outline" class="dialogo-form__campo">
     <mat-label>Costo (opcional)</mat-label>
-    <input matInput type="number" min="0" step="1" [(ngModel)]="costo" name="costo" />
+    <input matInput type="number" min="0" step="0.01" [(ngModel)]="costo" name="costo" />
     <span matTextPrefix>$&nbsp;</span>
     <mat-hint>Solo para calcular margen; nunca sale en la remisión</mat-hint>
   </mat-form-field>

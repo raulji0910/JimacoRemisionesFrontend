@@ -70,7 +70,7 @@
         <mat-icon matSuffix>add_shopping_cart</mat-icon>
         <mat-autocomplete #autoProducto="matAutocomplete" [displayWith]="mostrarProducto" (optionSelected)="agregarProducto($event)">
           @for (p of productosEncontrados(); track p.id) {
-            <mat-option [value]="p" [disabled]="p.precioVenta <= 0">
+            <mat-option [value]="p" [disabled]="p.precioVenta <= 0 || p.stock <= 0">
               {{ p.codigo }} — {{ p.nombre }}
               <span class="remision-form__precio-opcion">
                 @if (p.precioVenta > 0) {
@@ -78,7 +78,11 @@
                 } @else {
                   sin precio
                 }
-                @if (p.disponible !== null) { · disponible {{ p.disponible }} }
+                @if (p.stock <= 0) {
+                  · sin stock
+                } @else {
+                  · stock {{ p.stock }}
+                }
               </span>
             </mat-option>
           }
@@ -108,7 +112,7 @@
                   <td data-label="Producto">
                     {{ l.nombre }}
                     @if (l.existencia !== null && l.cantidad > l.existencia) {
-                      <span class="remision-form__alerta">Solo hay {{ l.existencia }} disponibles</span>
+                      <span class="remision-form__alerta">Solo hay {{ l.existencia }} en stock</span>
                     }
                   </td>
                   <td data-label="Cant." class="num">

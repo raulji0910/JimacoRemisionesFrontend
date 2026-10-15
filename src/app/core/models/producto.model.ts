@@ -1,23 +1,15 @@
-export type OrigenRegistro = 'Local' | 'WorldOffice';
-
 export interface Producto {
   id: number;
   codigo: string;
   nombre: string;
   unidadMedida: string | null;
+  // Precio por unidad, antes de IVA.
   precioVenta: number;
   costo: number | null;
   iva: number;
-  origen: OrigenRegistro;
   activo: boolean;
-  idWorldOffice: number | null;
-  // Existencia en la bodega de venta según la última sincronización con World Office (null = sin dato).
-  existencia: number | null;
-  existenciaActualizadaEn: string | null;
-  // Unidades vendidas desde esta app que World Office todavía no refleja.
-  reservado: number | null;
-  // Existencia de WO menos lo reservado: la cifra que se mira al vender (null = sin dato).
-  disponible: number | null;
+  // Existencia actual: la maneja esta app (cambia con ventas, entradas y ajustes).
+  stock: number;
 }
 
 export interface ProductoCrear {
@@ -27,8 +19,17 @@ export interface ProductoCrear {
   precioVenta: number;
   costo: number | null;
   iva: number;
+  // Unidades con las que arranca el producto (queda como "Carga inicial" en el historial).
+  stockInicial: number;
 }
 
-export interface ProductoActualizar extends ProductoCrear {
+// El stock no se edita aquí: solo cambia con movimientos.
+export interface ProductoActualizar {
+  codigo: string;
+  nombre: string;
+  unidadMedida: string | null;
+  precioVenta: number;
+  costo: number | null;
+  iva: number;
   activo: boolean;
 }

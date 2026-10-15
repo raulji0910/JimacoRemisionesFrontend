@@ -29,7 +29,7 @@ interface Linea {
   precioUnitario: number;
   iva: number;
   cantidad: number;
-  // Disponible (existencia de World Office menos lo ya vendido en esta app) al agregarla; null = sin dato.
+  // Stock del producto al agregarlo (null al editar una remisión: ahí lo valida el servidor).
   existencia: number | null;
 }
 
@@ -91,7 +91,12 @@ export class RemisionFormComponent implements OnInit {
   );
 
   readonly puedeGuardar = computed(
-    () => !!this.comprador()?.email && this.lineas().length > 0 && !this.descuentoInvalido() && !this.guardando()
+    () =>
+      !!this.comprador()?.email &&
+      this.lineas().length > 0 &&
+      !this.descuentoInvalido() &&
+      !this.guardando() &&
+      !this.lineas().some((l) => l.existencia !== null && l.cantidad > l.existencia)
   );
 
   ngOnInit(): void {
@@ -224,7 +229,7 @@ export class RemisionFormComponent implements OnInit {
           precioUnitario: producto.precioVenta,
           iva: producto.iva,
           cantidad: 1,
-          existencia: producto.disponible
+          existencia: producto.stock
         }
       ];
     });

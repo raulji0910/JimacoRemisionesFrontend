@@ -1,34 +1,30 @@
-export interface EstadoInventario {
-  // Hora (UTC, ISO) de la última foto de existencias de World Office; null si nunca se cargó.
-  ultimaFotoEn: string | null;
-  bodegaVenta: string;
-  productosConExistencia: number;
-  // Productos activos que todavía no se pueden vender por no tener precio.
-  productosSinPrecio: number;
+export type TipoMovimiento = 'CargaInicial' | 'Entrada' | 'Venta' | 'Reintegro' | 'Ajuste';
+
+export interface Movimiento {
+  id: number;
+  fecha: string;
+  tipo: TipoMovimiento;
+  // Con signo: positivo entra, negativo sale.
+  cantidad: number;
+  // Stock del producto después de este movimiento.
+  saldoResultante: number;
+  remisionId: number | null;
+  remisionConsecutivo: string | null;
+  usuario: string | null;
+  motivo: string | null;
 }
 
-export interface ImportarInventarioFila {
-  idWorldOffice: number;
-  codigo: string;
-  nombre: string;
-  unidad: string | null;
-  iva: number;
-  activo: boolean;
-  existencia: number | null;
-  precio: number | null;
+// Movimiento manual (solo administrador): Entrada (cantidad positiva) o Ajuste (con signo, motivo obligatorio).
+export interface MovimientoManual {
+  tipo: 'Entrada' | 'Ajuste';
+  cantidad: number;
+  motivo: string | null;
 }
 
-export interface ImportarInventarioRequest {
-  filas: ImportarInventarioFila[];
-  actualizarPrecios: boolean;
-  exportadoEn: string | null;
-}
-
-export interface ImportarInventarioResultado {
-  productosCreados: number;
-  productosActualizados: number;
-  omitidos: number;
-  existenciasCargadas: number;
-  preciosAsignados: number;
-  avisos: string[];
-}
+export const ETIQUETA_MOVIMIENTO: Record<TipoMovimiento, string> = {
+  CargaInicial: 'Stock inicial',
+  Entrada: 'Entrada',
+  Venta: 'Venta',
+  Reintegro: 'Reintegro por anulación',
+  Ajuste: 'Ajuste'
+};

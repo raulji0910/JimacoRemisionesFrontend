@@ -15,7 +15,7 @@
   <div class="comprador-form__fila">
     <mat-form-field appearance="outline" class="comprador-form__tipo">
       <mat-label>Tipo</mat-label>
-      <mat-select [(ngModel)]="tipoDocumento" name="tipoDocumento" [disabled]="esJuridica || documentoBloqueado">
+      <mat-select [(ngModel)]="tipoDocumento" name="tipoDocumento" [disabled]="esJuridica">
         @for (tipo of tiposDocumento; track tipo.codigo) {
           <mat-option [value]="tipo.codigo">{{ tipo.codigo }} — {{ tipo.nombre }}</mat-option>
         }
@@ -24,10 +24,7 @@
 
     <mat-form-field appearance="outline" class="comprador-form__numero">
       <mat-label>{{ esJuridica ? 'NIT (sin dígito de verificación)' : 'Número de documento' }}</mat-label>
-      <input matInput [(ngModel)]="numeroDocumento" name="numeroDocumento" required [disabled]="documentoBloqueado" />
-      @if (documentoBloqueado) {
-        <mat-hint>Viene de World Office, no se puede cambiar</mat-hint>
-      }
+      <input matInput [(ngModel)]="numeroDocumento" name="numeroDocumento" required />
     </mat-form-field>
   </div>
 

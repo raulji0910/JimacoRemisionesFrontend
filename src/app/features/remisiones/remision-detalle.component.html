@@ -49,13 +49,6 @@
         </button>
       }
 
-      @if (pendienteDeWo()) {
-        <button mat-stroked-button (click)="registrarEnWo()" [disabled]="ocupado()">
-          <mat-icon>inventory_2</mat-icon>
-          Registrar en World Office
-        </button>
-      }
-
       @if (entregaPendiente()) {
         <button mat-flat-button color="primary" (click)="marcarEntregada()" [disabled]="ocupado()">
           <mat-icon>inventory</mat-icon>
@@ -101,7 +94,7 @@
         </mat-card-content>
       </mat-card>
 
-      <!-- Pago, entrega y sincronización -->
+      <!-- Pago y entrega -->
       <mat-card>
         <mat-card-header><mat-card-title>Pago y entrega</mat-card-title></mat-card-header>
         <mat-card-content>
@@ -136,17 +129,6 @@
                 Correo enviado el {{ r.correoEnviadoEn | date: 'dd/MM/yyyy HH:mm' }}
               } @else {
                 Correo sin enviar
-              }
-            </span>
-          </div>
-          <div class="detalle__dato">
-            <mat-icon>inventory_2</mat-icon>
-            <span>
-              Inventario World Office:
-              @switch (r.sincronizacionWo) {
-                @case ('Sincronizada') { descontado ({{ r.documentoWorldOffice }}) }
-                @case ('Error') { error — {{ r.errorSincronizacionWo }} }
-                @default { pendiente de registrar{{ esPagada() ? ' (sigue restando del disponible)' : '' }} }
               }
             </span>
           </div>

@@ -1,5 +1,3 @@
-import { OrigenRegistro } from './producto.model';
-
 export type TipoPersona = 'Natural' | 'Juridica';
 
 export interface Comprador {
@@ -17,7 +15,6 @@ export interface Comprador {
   ciudad: string | null;
   telefono: string | null;
   email: string;
-  origen: OrigenRegistro;
   activo: boolean;
 }
 
