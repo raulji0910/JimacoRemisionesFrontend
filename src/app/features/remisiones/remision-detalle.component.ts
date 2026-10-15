@@ -87,18 +87,18 @@ export class RemisionDetalleComponent implements OnInit {
         width: '28rem',
         data: {
           titulo: 'Confirmar pago',
-          mensaje: `Confirma que el datáfono aprobó el cobro de ${total}. Al confirmar se enviará la remisión a ${r.compradorEmail}.`,
-          etiqueta: 'Número de aprobación / voucher (opcional)',
-          obligatorio: false,
+          mensaje: `Confirma que el datáfono aprobó el cobro de ${total}. Al confirmar se enviará la remisión a ${r.compradorEmail} y a contabilidad.`,
+          etiqueta: 'Número de recibo Redeban',
+          obligatorio: true,
           textoConfirmar: 'Marcar como pagada'
         }
       })
       .afterClosed()
-      .subscribe((referencia: string | null) => {
-        if (referencia === null || referencia === undefined) return;
+      .subscribe((recibo: string | null) => {
+        if (!recibo) return;
 
         this.ocupado.set(true);
-        this.remisionService.pagar(r.id, referencia || null).subscribe({
+        this.remisionService.pagar(r.id, recibo).subscribe({
           next: (resultado) => {
             this.remision.set(resultado.remision);
             this.ocupado.set(false);

@@ -66,7 +66,7 @@ export interface RemisionDetalle {
   estadoPago: EstadoPago;
   fechaPago: string | null;
   pagadaPor: string | null;
-  referenciaPago: string | null;
+  reciboRedeban: string | null;
   tipoEntrega: TipoEntrega;
   estadoEntrega: EstadoEntrega;
   fechaEntrega: string | null;

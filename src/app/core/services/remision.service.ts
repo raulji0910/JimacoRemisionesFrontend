@@ -43,8 +43,8 @@ export class RemisionService {
     return this.http.put<RemisionDetalle>(`${this.baseUrl}/${id}`, dto);
   }
 
-  pagar(id: number, referenciaPago: string | null): Observable<PagarResultado> {
-    return this.http.post<PagarResultado>(`${this.baseUrl}/${id}/pagar`, { referenciaPago });
+  pagar(id: number, reciboRedeban: string): Observable<PagarResultado> {
+    return this.http.post<PagarResultado>(`${this.baseUrl}/${id}/pagar`, { reciboRedeban });
   }
 
   enviarCorreo(id: number): Observable<EnviarCorreoResultado> {
