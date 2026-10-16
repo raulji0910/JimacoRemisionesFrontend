@@ -49,6 +49,17 @@
         </button>
       }
 
+      @if (esPagada()) {
+        <button mat-stroked-button (click)="enviarWhatsApp()" [disabled]="ocupado()">
+          <mat-icon>chat</mat-icon>
+          WhatsApp
+        </button>
+        <button mat-stroked-button (click)="compartirPdf()" [disabled]="ocupado()">
+          <mat-icon>ios_share</mat-icon>
+          Compartir PDF
+        </button>
+      }
+
       @if (entregaPendiente()) {
         <button mat-flat-button color="primary" (click)="marcarEntregada()" [disabled]="ocupado()">
           <mat-icon>inventory</mat-icon>

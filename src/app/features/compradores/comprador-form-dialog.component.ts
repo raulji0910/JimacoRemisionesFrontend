@@ -1,3 +1,4 @@
+import { normalizarCelular } from '../../core/utils/whatsapp';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -79,7 +80,7 @@ export class CompradorFormDialogComponent {
   get valido(): boolean {
     const correoOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(this.email.trim());
     const nombreOk = !!this.primerNombre.trim() && (this.esJuridica || !!this.primerApellido.trim());
-    return !!this.numeroDocumento.trim() && nombreOk && correoOk;
+    return !!this.numeroDocumento.trim() && nombreOk && correoOk && normalizarCelular(this.telefono) !== null;
   }
 
   guardar(): void {
@@ -95,7 +96,7 @@ export class CompradorFormDialogComponent {
       segundoApellido: this.esJuridica ? null : this.segundoApellido.trim() || null,
       direccion: this.direccion.trim() || null,
       ciudad: this.ciudad.trim() || null,
-      telefono: this.telefono.trim() || null,
+      telefono: normalizarCelular(this.telefono),
       email: this.email.trim(),
       activo: this.activo
     };

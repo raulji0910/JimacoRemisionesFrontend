@@ -64,6 +64,11 @@ export class RemisionService {
   }
 
   // El PDF necesita el token: se baja como blob autenticado y se abre desde una URL local.
+  // Token firmado para el enlace público del PDF (el cliente lo abre sin iniciar sesión).
+  obtenerEnlacePublico(id: number): Observable<{ token: string }> {
+    return this.http.get<{ token: string }>(`${this.baseUrl}/${id}/enlace-publico`);
+  }
+
   obtenerPdf(id: number): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${id}/pdf`, { responseType: 'blob' });
   }

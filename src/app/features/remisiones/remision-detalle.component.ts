@@ -13,6 +13,8 @@ import { RemisionService } from '../../core/services/remision.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RemisionDetalle } from '../../core/models/remision.model';
 import { TextoDialogComponent } from '../../core/dialogs/texto-dialog.component';
+import { environment } from '../../../environments/environment';
+import { enlaceWhatsApp, normalizarCelular } from '../../core/utils/whatsapp';
 
 @Component({
   selector: 'app-remision-detalle',
@@ -107,6 +109,60 @@ export class RemisionDetalleComponent implements OnInit {
           error: (error) => this.manejarError(error, 'No se pudo registrar el pago.')
         });
       });
+  }
+
+  private mensajeWhatsApp(r: RemisionDetalle, enlace: string | null): string {
+    const total = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(r.totalGeneral);
+    const base = `Hola ${r.compradorNombre}, gracias por su compra en Jimaco. Su remisión ${r.consecutivoFormateado} por ${total} (recibo Redeban ${r.reciboRedeban}).`;
+    return enlace ? `${base} Puede verla aquí: ${enlace}` : base;
+  }
+
+  // Abre el chat del cliente (app del celular o WhatsApp Web) con el mensaje y el enlace al PDF ya escritos.
+  enviarWhatsApp(): void {
+    const r = this.remision();
+    if (!r) return;
+    const celular = normalizarCelular(r.compradorTelefono);
+    if (!celular) {
+      this.snackBar.open('El cliente no tiene un celular válido. Edítalo en Compradores.', 'Cerrar', { duration: 5000 });
+      return;
+    }
+    // Se abre la pestaña de inmediato (los navegadores bloquean ventanas abiertas tras una espera).
+    const ventana = window.open('', '_blank');
+    this.remisionService.obtenerEnlacePublico(r.id).subscribe({
+      next: ({ token }) => {
+        const enlace = new URL(`${environment.apiUrl}/publico/remisiones/${r.id}/pdf?t=${token}`, window.location.origin).href;
+        const destino = enlaceWhatsApp(celular, this.mensajeWhatsApp(r, enlace));
+        if (ventana) ventana.location.href = destino;
+        else window.location.href = destino;
+      },
+      error: () => {
+        ventana?.close();
+        this.snackBar.open('No se pudo preparar el enlace de WhatsApp.', 'Cerrar', { duration: 4000 });
+      }
+    });
+  }
+
+  // Abre el menú de compartir del celular con el PDF adjunto; el operador elige WhatsApp y el chat.
+  compartirPdf(): void {
+    const r = this.remision();
+    if (!r) return;
+    this.remisionService.obtenerPdf(r.id).subscribe({
+      next: async (blob) => {
+        const archivo = new File([blob], `${r.consecutivoFormateado}.pdf`, { type: 'application/pdf' });
+        if (!navigator.canShare?.({ files: [archivo] })) {
+          this.snackBar.open('Este navegador no permite compartir archivos. Usa el botón WhatsApp o abre esto desde el celular.', 'Cerrar', { duration: 6000 });
+          return;
+        }
+        try {
+          await navigator.share({ files: [archivo], text: this.mensajeWhatsApp(r, null) });
+        } catch (error) {
+          // AbortError = el usuario cerró el menú de compartir; no es un fallo.
+          if ((error as DOMException).name !== 'AbortError')
+            this.snackBar.open('No se pudo compartir el PDF.', 'Cerrar', { duration: 4000 });
+        }
+      },
+      error: () => this.snackBar.open('No se pudo generar el PDF.', 'Cerrar', { duration: 4000 })
+    });
   }
 
   enviarCorreo(): void {

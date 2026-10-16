@@ -64,8 +64,9 @@
 
   <div class="comprador-form__fila">
     <mat-form-field appearance="outline" class="comprador-form__mitad">
-      <mat-label>Teléfono</mat-label>
-      <input matInput [(ngModel)]="telefono" name="telefono" />
+      <mat-label>Celular (WhatsApp)</mat-label>
+      <input matInput type="tel" inputmode="numeric" [(ngModel)]="telefono" name="telefono" required />
+      <mat-hint>10 dígitos, empieza por 3</mat-hint>
     </mat-form-field>
     <mat-form-field appearance="outline" class="comprador-form__mitad">
       <mat-label>Ciudad</mat-label>
