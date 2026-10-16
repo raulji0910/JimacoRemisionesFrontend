@@ -32,19 +32,19 @@ export interface AjusteStockDialogData {
       </mat-button-toggle-group>
 
       @if (tipo() === 'Entrada') {
-        <mat-form-field appearance="outline" class="dialogo-form__campo">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dialogo-form__campo">
           <mat-label>Unidades que llegaron</mat-label>
           <input matInput type="number" min="1" step="1" [ngModel]="cantidad()" (ngModelChange)="cantidad.set($event)" name="cantidad" />
         </mat-form-field>
       } @else {
-        <mat-form-field appearance="outline" class="dialogo-form__campo">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dialogo-form__campo">
           <mat-label>Stock real contado</mat-label>
           <input matInput type="number" min="0" step="1" [ngModel]="contado()" (ngModelChange)="contado.set($event)" name="contado" />
           <mat-hint>Se registra la diferencia contra el stock actual</mat-hint>
         </mat-form-field>
       }
 
-      <mat-form-field appearance="outline" class="dialogo-form__campo">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dialogo-form__campo">
         <mat-label>Motivo {{ tipo() === 'Ajuste' ? '(obligatorio)' : '(opcional)' }}</mat-label>
         <input matInput [ngModel]="motivo()" (ngModelChange)="motivo.set($event)" name="motivo" maxlength="500" />
       </mat-form-field>

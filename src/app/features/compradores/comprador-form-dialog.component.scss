@@ -22,3 +22,30 @@
     flex: 1 1 10rem;
   }
 }
+
+// Móvil: un campo por fila (a media columna las etiquetas se cortan y las ayudas se enciman).
+@media (max-width: 600px) {
+  .comprador-form__fila {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+
+  .comprador-form__tipo,
+  .comprador-form__numero,
+  .comprador-form__mitad {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .comprador-form__persona {
+    align-self: stretch;
+    margin: 0.5rem 0 0.75rem;
+    width: 100%;
+  }
+}
+
+// Con subscriptSizing="dynamic" el espacio bajo cada campo crece solo si hay ayuda/error; este margen separa los campos.
+.comprador-form mat-form-field {
+  margin-bottom: 0.9rem;
+}

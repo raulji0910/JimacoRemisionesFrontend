@@ -28,7 +28,7 @@ export interface TextoDialogData {
       @if (data.mensaje) {
         <p>{{ data.mensaje }}</p>
       }
-      <mat-form-field appearance="outline" class="dialogo-form__campo">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dialogo-form__campo">
         <mat-label>{{ data.etiqueta }}</mat-label>
         <input matInput [(ngModel)]="texto" name="texto" [required]="data.obligatorio" (keyup.enter)="confirmar()" />
         @if (data.ayuda) {

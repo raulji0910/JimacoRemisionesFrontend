@@ -192,3 +192,59 @@ body {
     font-size: 16px;
   }
 }
+
+// Diálogos en celular: casi todo el ancho de la pantalla (por defecto Material los deja en 80% y los campos se aprietan),
+// con el espacio para ayudas/errores bajo cada campo bien separado del siguiente.
+@media (max-width: 600px) {
+  .cdk-overlay-pane.mat-mdc-dialog-panel {
+    max-width: calc(100vw - 16px) !important;
+    width: calc(100vw - 16px);
+  }
+
+  .mat-mdc-dialog-content.dialogo-form {
+    padding-top: 0.25rem;
+
+    .mat-mdc-form-field {
+      width: 100%;
+    }
+
+    .mat-mdc-form-field-subscript-wrapper {
+      min-height: 1.25rem;
+    }
+
+    .mat-mdc-form-field-hint,
+    .mat-mdc-form-field-error {
+      font-size: 0.75rem;
+      line-height: 1.2;
+    }
+  }
+
+  .mat-mdc-dialog-actions {
+    padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom));
+    gap: 0.25rem;
+
+    .mat-mdc-button-base {
+      padding: 0 16px;
+    }
+  }
+}
+
+// Diálogos: con subscriptSizing="dynamic" (ayudas/errores que empujan al campo siguiente) hace falta separar los campos.
+.dialogo-form .mat-mdc-form-field {
+  margin-bottom: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  // Precio + IVA (y similares) uno bajo otro: a media columna la etiqueta y el valor se cortan.
+  .dialogo-form__iva {
+    flex-direction: column;
+    gap: 0;
+
+    &-costo,
+    &-select {
+      flex: 0 0 auto;
+      width: 100%;
+      min-width: 0;
+    }
+  }
+}

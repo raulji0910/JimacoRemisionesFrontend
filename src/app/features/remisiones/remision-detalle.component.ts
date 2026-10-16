@@ -92,7 +92,7 @@ export class RemisionDetalleComponent implements OnInit {
           mensaje: `Confirma que el datáfono aprobó el cobro de ${total}. Al confirmar se enviará la remisión a ${r.compradorEmail} y a contabilidad.`,
           etiqueta: 'Número de recibo Redeban',
           obligatorio: true,
-          textoConfirmar: 'Marcar como pagada'
+          textoConfirmar: 'Confirmar pago'
         }
       })
       .afterClosed()

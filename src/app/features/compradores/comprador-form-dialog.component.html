@@ -13,7 +13,7 @@
   </mat-button-toggle-group>
 
   <div class="comprador-form__fila">
-    <mat-form-field appearance="outline" class="comprador-form__tipo">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__tipo">
       <mat-label>Tipo</mat-label>
       <mat-select [(ngModel)]="tipoDocumento" name="tipoDocumento" [disabled]="esJuridica">
         @for (tipo of tiposDocumento; track tipo.codigo) {
@@ -22,59 +22,59 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="comprador-form__numero">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__numero">
       <mat-label>{{ esJuridica ? 'NIT (sin dígito de verificación)' : 'Número de documento' }}</mat-label>
       <input matInput [(ngModel)]="numeroDocumento" name="numeroDocumento" required />
     </mat-form-field>
   </div>
 
   @if (esJuridica) {
-    <mat-form-field appearance="outline" class="dialogo-form__campo">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dialogo-form__campo">
       <mat-label>Razón social</mat-label>
       <input matInput [(ngModel)]="primerNombre" name="razonSocial" required />
     </mat-form-field>
   } @else {
     <div class="comprador-form__fila">
-      <mat-form-field appearance="outline" class="comprador-form__mitad">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__mitad">
         <mat-label>Primer nombre</mat-label>
         <input matInput [(ngModel)]="primerNombre" name="primerNombre" required />
       </mat-form-field>
-      <mat-form-field appearance="outline" class="comprador-form__mitad">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__mitad">
         <mat-label>Segundo nombre</mat-label>
         <input matInput [(ngModel)]="segundoNombre" name="segundoNombre" />
       </mat-form-field>
     </div>
     <div class="comprador-form__fila">
-      <mat-form-field appearance="outline" class="comprador-form__mitad">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__mitad">
         <mat-label>Primer apellido</mat-label>
         <input matInput [(ngModel)]="primerApellido" name="primerApellido" required />
       </mat-form-field>
-      <mat-form-field appearance="outline" class="comprador-form__mitad">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__mitad">
         <mat-label>Segundo apellido</mat-label>
         <input matInput [(ngModel)]="segundoApellido" name="segundoApellido" />
       </mat-form-field>
     </div>
   }
 
-  <mat-form-field appearance="outline" class="dialogo-form__campo">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dialogo-form__campo">
     <mat-label>Correo electrónico</mat-label>
     <input matInput type="email" [(ngModel)]="email" name="email" required />
-    <mat-hint>A este correo se envía la remisión una vez pagada</mat-hint>
+    <mat-hint>Aquí se envía la remisión al pagar</mat-hint>
   </mat-form-field>
 
   <div class="comprador-form__fila">
-    <mat-form-field appearance="outline" class="comprador-form__mitad">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__mitad">
       <mat-label>Celular (WhatsApp)</mat-label>
       <input matInput type="tel" inputmode="numeric" [(ngModel)]="telefono" name="telefono" required />
       <mat-hint>10 dígitos, empieza por 3</mat-hint>
     </mat-form-field>
-    <mat-form-field appearance="outline" class="comprador-form__mitad">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__mitad">
       <mat-label>Ciudad</mat-label>
       <input matInput [(ngModel)]="ciudad" name="ciudad" />
     </mat-form-field>
   </div>
 
-  <mat-form-field appearance="outline" class="dialogo-form__campo">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dialogo-form__campo">
     <mat-label>Dirección (de entrega)</mat-label>
     <input matInput [(ngModel)]="direccion" name="direccion" />
   </mat-form-field>
