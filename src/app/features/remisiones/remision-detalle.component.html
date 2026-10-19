@@ -139,7 +139,7 @@
               @if (r.correoEnviadoEn) {
                 Correo enviado el {{ r.correoEnviadoEn | date: 'dd/MM/yyyy HH:mm' }}
               } @else {
-                Correo sin enviar
+                {{ enviandoCorreo() ? 'Enviando correo…' : 'Correo sin enviar' }}
               }
             </span>
           </div>
@@ -193,8 +193,13 @@
         <div class="detalle__totales">
           <div class="fila"><span>Subtotal ítems</span><strong>{{ r.subtotalItems | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           @if (r.descuento > 0) {
-            <div class="fila"><span>Descuento</span><strong>-{{ r.descuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
-            <div class="fila"><span>Subtotal</span><strong>{{ r.subtotalConDescuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            <div class="fila"><span>Descuento ({{ r.descuentoPorcentaje }}%)</span><strong>-{{ r.descuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          }
+          @if (r.retencion > 0) {
+            <div class="fila"><span>Retención</span><strong>-{{ r.retencion | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          }
+          @if (r.descuento > 0 || r.retencion > 0) {
+            <div class="fila"><span>Valor antes de IVA</span><strong>{{ r.subtotalConDescuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           }
           @for (tramo of r.ivaDesglose; track tramo.tarifa) {
             <div class="fila"><span>IVA ({{ tramo.tarifa }}%)</span><strong>{{ tramo.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>

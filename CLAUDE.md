@@ -34,4 +34,6 @@ npx ng serve                               # lee apiUrl de src/environments/envi
 ```
 
 ## Versionado
-En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.6.0`).
+En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.8.0`).
+
+**WhatsApp en celular**: el token del enlace público se pide al cargar el detalle (no al pulsar) para poder abrir WhatsApp en el mismo gesto: en móvil `window.location.href = whatsapp://send?...` con respaldo `wa.me` a los 1,5 s que se cancela si la página pasa a segundo plano (`visibilitychange`); en computador `window.open(wa.me)`. Antes se abría una pestaña en blanco por adelantado que quedaba abierta al volver desde la app.

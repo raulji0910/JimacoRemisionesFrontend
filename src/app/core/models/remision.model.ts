@@ -10,7 +10,8 @@ export interface RemisionItemEntrada {
 export interface RemisionGuardar {
   compradorId: number;
   tipoEntrega: TipoEntrega;
-  descuento: number;
+  descuentoPorcentaje: number;
+  retencion: number;
   nota: string | null;
   items: RemisionItemEntrada[];
 }
@@ -75,7 +76,9 @@ export interface RemisionDetalle {
   motivoAnulacion: string | null;
   items: RemisionItem[];
   subtotalItems: number;
+  descuentoPorcentaje: number;
   descuento: number;
+  retencion: number;
   subtotalConDescuento: number;
   ivaDesglose: IvaDesglose[];
   totalGeneral: number;
@@ -85,6 +88,7 @@ export interface PagarResultado {
   remision: RemisionDetalle;
   correoEnviado: boolean;
   errorCorreo: string | null;
+  correoEnCola: boolean;
 }
 
 export interface EnviarCorreoResultado {

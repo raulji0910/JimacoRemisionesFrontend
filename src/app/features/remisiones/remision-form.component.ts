@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatDialog } from '@angular/material/dialog';
@@ -39,6 +40,7 @@ interface Linea {
   selector: 'app-remision-form',
   standalone: true,
   imports: [
+    MatCheckboxModule,
     FormsModule,
     ReactiveFormsModule,
     CurrencyPipe,
@@ -70,7 +72,9 @@ export class RemisionFormComponent implements OnInit {
 
   readonly comprador = signal<Comprador | null>(null);
   readonly lineas = signal<Linea[]>([]);
-  readonly descuento = signal(0);
+  readonly descuentoPct = signal(0);
+  readonly usarRetencion = signal(false);
+  readonly retencion = signal(0);
   tipoEntrega: TipoEntrega = 'EnSitio';
   nota = '';
 
@@ -82,12 +86,15 @@ export class RemisionFormComponent implements OnInit {
   readonly calculo = computed(() =>
     calcularRemision(
       this.lineas().map((l) => ({ precioUnitario: l.precioUnitario, cantidad: l.cantidad, iva: l.iva })),
-      this.descuento()
+      this.descuentoPct(),
+      this.usarRetencion() ? this.retencion() : 0
     )
   );
 
-  readonly descuentoInvalido = computed(
-    () => this.descuento() < 0 || this.descuento() > this.calculo().subtotalItems
+  // Descuento: 0 a 50 %. Retención: mayor que cero cuando se activa y menor al valor antes de IVA (ya con el descuento).
+  readonly descuentoInvalido = computed(() => this.descuentoPct() < 0 || this.descuentoPct() > 50);
+  readonly retencionInvalida = computed(
+    () => this.usarRetencion() && (this.retencion() <= 0 || this.calculo().subtotalConDescuento <= 0)
   );
 
   readonly puedeGuardar = computed(
@@ -95,6 +102,7 @@ export class RemisionFormComponent implements OnInit {
       !!this.comprador()?.email &&
       this.lineas().length > 0 &&
       !this.descuentoInvalido() &&
+      !this.retencionInvalida() &&
       !this.guardando() &&
       !this.lineas().some((l) => l.existencia !== null && l.cantidad > l.existencia)
   );
@@ -137,7 +145,9 @@ export class RemisionFormComponent implements OnInit {
 
         this.tipoEntrega = remision.tipoEntrega;
         this.nota = remision.nota ?? '';
-        this.descuento.set(remision.descuento);
+        this.descuentoPct.set(remision.descuentoPorcentaje);
+        this.usarRetencion.set(remision.retencion > 0);
+        this.retencion.set(remision.retencion);
         this.lineas.set(
           remision.items.map((i) => ({
             productoId: i.productoId,
@@ -247,7 +257,16 @@ export class RemisionFormComponent implements OnInit {
   }
 
   cambiarDescuento(valor: number | string): void {
-    this.descuento.set(Math.max(0, Number(valor) || 0));
+    this.descuentoPct.set(Math.min(50, Math.max(0, Number(valor) || 0)));
+  }
+
+  cambiarRetencion(valor: number | string): void {
+    this.retencion.set(Math.max(0, Number(valor) || 0));
+  }
+
+  alternarRetencion(activa: boolean): void {
+    this.usarRetencion.set(activa);
+    if (!activa) this.retencion.set(0);
   }
 
   // ---- Guardar ----
@@ -259,7 +278,8 @@ export class RemisionFormComponent implements OnInit {
     const dto: RemisionGuardar = {
       compradorId: comprador.id,
       tipoEntrega: this.tipoEntrega,
-      descuento: this.descuento(),
+      descuentoPorcentaje: this.descuentoPct(),
+      retencion: this.usarRetencion() ? this.retencion() : 0,
       nota: this.nota.trim() || null,
       items: this.lineas().map((l) => ({ productoId: l.productoId, cantidad: l.cantidad }))
     };

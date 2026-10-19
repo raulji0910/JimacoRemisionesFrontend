@@ -58,11 +58,25 @@ export class RemisionDetalleComponent implements OnInit {
       next: (remision) => {
         this.remision.set(remision);
         this.cargando.set(false);
+        this.prepararEnlace(remision);
       },
       error: () => {
         this.cargando.set(false);
         this.router.navigate(['/remisiones']);
       }
+    });
+  }
+
+  // Token del enlace público del PDF, pedido por adelantado para poder abrir WhatsApp en el mismo clic
+  // (sin abrir antes una pestaña en blanco que luego se queda ahí al volver desde la app).
+  private readonly tokenPdf = signal<string | null>(null);
+  readonly enviandoCorreo = signal(false);
+
+  private prepararEnlace(r: RemisionDetalle): void {
+    if (r.estadoPago !== 'Pagada' || this.tokenPdf()) return;
+    this.remisionService.obtenerEnlacePublico(r.id).subscribe({
+      next: ({ token }) => this.tokenPdf.set(token),
+      error: () => this.tokenPdf.set(null)
     });
   }
 
@@ -104,7 +118,13 @@ export class RemisionDetalleComponent implements OnInit {
           next: (resultado) => {
             this.remision.set(resultado.remision);
             this.ocupado.set(false);
-            this.avisarCorreo(resultado.correoEnviado, resultado.errorCorreo, resultado.remision.compradorEmail, 'Pago registrado');
+            this.prepararEnlace(resultado.remision);
+            if (resultado.correoEnCola) {
+              this.snackBar.open('Pago registrado. La remisión se está enviando por correo; puede tardar un poco.', 'Cerrar', { duration: 5000 });
+              this.seguirEnvioCorreo(resultado.remision.id);
+            } else {
+              this.avisarCorreo(resultado.correoEnviado, resultado.errorCorreo, resultado.remision.compradorEmail, 'Pago registrado');
+            }
           },
           error: (error) => this.manejarError(error, 'No se pudo registrar el pago.')
         });
@@ -117,7 +137,9 @@ export class RemisionDetalleComponent implements OnInit {
     return enlace ? `${base} Puede verla aquí: ${enlace}` : base;
   }
 
-  // Abre el chat del cliente (app del celular o WhatsApp Web) con el mensaje y el enlace al PDF ya escritos.
+  // Abre el chat del cliente con el mensaje y el enlace al PDF ya escritos. En celular abre la app de WhatsApp
+  // directamente (esquema whatsapp://), sin crear pestañas: al volver sigues en esta pantalla. Si WhatsApp no
+  // está instalado (la página sigue visible tras un momento) se usa wa.me como respaldo. En computador, WhatsApp Web.
   enviarWhatsApp(): void {
     const r = this.remision();
     if (!r) return;
@@ -126,20 +148,26 @@ export class RemisionDetalleComponent implements OnInit {
       this.snackBar.open('El cliente no tiene un celular válido. Edítalo en Compradores.', 'Cerrar', { duration: 5000 });
       return;
     }
-    // Se abre la pestaña de inmediato (los navegadores bloquean ventanas abiertas tras una espera).
-    const ventana = window.open('', '_blank');
-    this.remisionService.obtenerEnlacePublico(r.id).subscribe({
-      next: ({ token }) => {
-        const enlace = new URL(`${environment.apiUrl}/publico/remisiones/${r.id}/pdf?t=${token}`, window.location.origin).href;
-        const destino = enlaceWhatsApp(celular, this.mensajeWhatsApp(r, enlace));
-        if (ventana) ventana.location.href = destino;
-        else window.location.href = destino;
-      },
-      error: () => {
-        ventana?.close();
-        this.snackBar.open('No se pudo preparar el enlace de WhatsApp.', 'Cerrar', { duration: 4000 });
-      }
-    });
+    const token = this.tokenPdf();
+    if (!token) {
+      this.prepararEnlace(r);
+      this.snackBar.open('Preparando el enlace, intenta de nuevo en un instante.', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    const enlace = new URL(`${environment.apiUrl}/publico/remisiones/${r.id}/pdf?t=${token}`, window.location.origin).href;
+    const mensaje = this.mensajeWhatsApp(r, enlace);
+    const web = enlaceWhatsApp(celular, mensaje);
+
+    if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      window.open(web, '_blank', 'noopener');
+      return;
+    }
+
+    const respaldo = window.setTimeout(() => window.open(web, '_blank', 'noopener'), 1500);
+    // Si la app se abrió, la página pasa a segundo plano: se cancela el respaldo (si no, al volver se abriría una pestaña de más).
+    document.addEventListener('visibilitychange', () => window.clearTimeout(respaldo), { once: true });
+    window.location.href = `whatsapp://send?phone=57${celular}&text=${encodeURIComponent(mensaje)}`;
   }
 
   // Abre el menú de compartir del celular con el PDF adjunto; el operador elige WhatsApp y el chat.
@@ -178,6 +206,29 @@ export class RemisionDetalleComponent implements OnInit {
       },
       error: (error) => this.manejarError(error, 'No se pudo enviar el correo.')
     });
+  }
+
+  // El correo sale en segundo plano: se consulta la remisión unos segundos hasta que quede marcada como enviada.
+  private seguirEnvioCorreo(id: number, intento = 1): void {
+    this.enviandoCorreo.set(true);
+    setTimeout(() => {
+      this.remisionService.obtenerPorId(id).subscribe({
+        next: (actual) => {
+          if (this.remision()?.id !== id) return;
+          if (actual.correoEnviadoEn) {
+            this.remision.set(actual);
+            this.enviandoCorreo.set(false);
+            this.snackBar.open(`Remisión enviada a ${actual.compradorEmail}`, 'Cerrar', { duration: 4000 });
+          } else if (intento < 30) {
+            this.seguirEnvioCorreo(id, intento + 1);
+          } else {
+            this.enviandoCorreo.set(false);
+            this.snackBar.open('El correo aún no confirma el envío. Si el cliente no lo recibe, usa "Enviar correo" para reintentar.', 'Cerrar', { duration: 8000 });
+          }
+        },
+        error: () => this.enviandoCorreo.set(false)
+      });
+    }, 3000);
   }
 
   private avisarCorreo(enviado: boolean, error: string | null, email: string, prefijo: string | null): void {
