@@ -69,8 +69,30 @@
       <mat-hint>10 dígitos, empieza por 3</mat-hint>
     </mat-form-field>
     <mat-form-field appearance="outline" subscriptSizing="dynamic" class="comprador-form__mitad">
-      <mat-label>Ciudad</mat-label>
-      <input matInput [(ngModel)]="ciudad" name="ciudad" />
+      <mat-label>Ciudad (DANE)</mat-label>
+      <input
+        matInput
+        name="ciudad"
+        required
+        autocomplete="off"
+        [ngModel]="ciudadValor"
+        (ngModelChange)="alEscribirCiudad($event)"
+        [matAutocomplete]="autoCiudad"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+      <mat-hint>Escribe y elige de la lista</mat-hint>
+      <mat-autocomplete #autoCiudad="matAutocomplete" [displayWith]="mostrarMunicipio" (closed)="alCerrarListaCiudad()">
+        @for (m of sugerencias; track m.codigo) {
+          <mat-option [value]="m">
+            <span class="comprador-form__muni">{{ m.nombre }}</span>
+            @if (m.nombre !== m.departamento) {
+              <span class="comprador-form__depto">{{ m.departamento }}</span>
+            }
+          </mat-option>
+        } @empty {
+          <mat-option disabled>Sin resultados</mat-option>
+        }
+      </mat-autocomplete>
     </mat-form-field>
   </div>
 

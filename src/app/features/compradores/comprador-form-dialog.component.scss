@@ -49,3 +49,13 @@
 .comprador-form mat-form-field {
   margin-bottom: 0.9rem;
 }
+
+.comprador-form__muni {
+  font-weight: 500;
+}
+
+.comprador-form__depto {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant);
+}

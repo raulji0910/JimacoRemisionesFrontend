@@ -13,6 +13,7 @@ export interface Comprador {
   nombreCompleto: string;
   direccion: string | null;
   ciudad: string | null;
+  ciudadCodigoDane: string | null;
   telefono: string | null;
   email: string;
   activo: boolean;
@@ -27,7 +28,7 @@ export interface CompradorGuardar {
   primerApellido: string | null;
   segundoApellido: string | null;
   direccion: string | null;
-  ciudad: string | null;
+  ciudadCodigoDane: string;
   telefono: string | null;
   email: string;
   activo: boolean;
