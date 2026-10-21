@@ -100,7 +100,7 @@ export class RemisionDetalleComponent implements OnInit {
     if (!r) return;
 
     this.dialog
-      .open(PagoDialogComponent, { width: '28rem', data: { total: r.totalGeneral, email: r.compradorEmail } })
+      .open(PagoDialogComponent, { width: '30rem', maxWidth: '95vw', data: { total: r.totalGeneral, email: r.compradorEmail } })
       .afterClosed()
       .subscribe((pago: PagoDialogResultado | null) => {
         if (!pago) return;
