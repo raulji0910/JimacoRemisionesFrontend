@@ -9,6 +9,10 @@
         <mat-icon matListItemIcon>receipt_long</mat-icon>
         <span matListItemTitle>Remisiones</span>
       </a>
+      <a mat-list-item routerLink="/cierre-caja" routerLinkActive="activo" (click)="esMovil() && sidenav.close()">
+        <mat-icon matListItemIcon>point_of_sale</mat-icon>
+        <span matListItemTitle>Cierre de caja</span>
+      </a>
       <a mat-list-item routerLink="/productos" routerLinkActive="activo" (click)="esMovil() && sidenav.close()">
         <mat-icon matListItemIcon>inventory_2</mat-icon>
         <span matListItemTitle>Productos</span>

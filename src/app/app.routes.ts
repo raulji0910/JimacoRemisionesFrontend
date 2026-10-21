@@ -29,6 +29,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/remisiones/remision-detalle.component').then((m) => m.RemisionDetalleComponent)
       },
       {
+        path: 'cierre-caja',
+        loadComponent: () => import('./features/cierre-caja/cierre-caja.component').then((m) => m.CierreCajaComponent)
+      },
+      {
         path: 'productos',
         loadComponent: () => import('./features/productos/productos-list.component').then((m) => m.ProductosListComponent)
       },

@@ -1,3 +1,4 @@
+import { MedioPago } from '../models/remision.model';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -43,8 +44,8 @@ export class RemisionService {
     return this.http.put<RemisionDetalle>(`${this.baseUrl}/${id}`, dto);
   }
 
-  pagar(id: number, reciboRedeban: string): Observable<PagarResultado> {
-    return this.http.post<PagarResultado>(`${this.baseUrl}/${id}/pagar`, { reciboRedeban });
+  pagar(id: number, medioPago: MedioPago, reciboRedeban: string | null): Observable<PagarResultado> {
+    return this.http.post<PagarResultado>(`${this.baseUrl}/${id}/pagar`, { medioPago, reciboRedeban });
   }
 
   enviarCorreo(id: number): Observable<EnviarCorreoResultado> {

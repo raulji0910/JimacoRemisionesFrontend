@@ -65,6 +65,9 @@
         >
           {{ r.estadoPago === 'Pendiente' ? 'Por cobrar' : r.estadoPago }}
         </mat-chip>
+        @if (r.medioPago) {
+          <span class="remisiones__medio">{{ nombreMedio(r.medioPago) }}</span>
+        }
       </td>
     </ng-container>
 

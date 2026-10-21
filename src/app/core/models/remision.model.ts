@@ -1,4 +1,12 @@
 export type EstadoPago = 'Pendiente' | 'Pagada' | 'Anulada';
+// Datáfono y QR pasan por el mismo datáfono Redeban (llevan número de recibo); Efectivo solo se marca.
+export type MedioPago = 'Datafono' | 'Qr' | 'Efectivo';
+
+export const NOMBRES_MEDIO_PAGO: Record<MedioPago, string> = { Datafono: 'Datáfono', Qr: 'Pago con QR', Efectivo: 'Efectivo' };
+
+export function nombreMedioPago(medio: MedioPago | null | undefined): string {
+  return medio ? NOMBRES_MEDIO_PAGO[medio] : '';
+}
 export type TipoEntrega = 'EnSitio' | 'Envio';
 export type EstadoEntrega = 'Pendiente' | 'Entregada';
 
@@ -44,6 +52,7 @@ export interface RemisionResumen {
   fechaCreacion: string;
   total: number;
   estadoPago: EstadoPago;
+  medioPago: MedioPago | null;
   tipoEntrega: TipoEntrega;
   estadoEntrega: EstadoEntrega;
   correoEnviado: boolean;
@@ -68,6 +77,7 @@ export interface RemisionDetalle {
   fechaPago: string | null;
   pagadaPor: string | null;
   reciboRedeban: string | null;
+  medioPago: MedioPago | null;
   tipoEntrega: TipoEntrega;
   estadoEntrega: EstadoEntrega;
   fechaEntrega: string | null;

@@ -11,8 +11,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
 import { RemisionService } from '../../core/services/remision.service';
 import { AuthService } from '../../core/services/auth.service';
-import { RemisionDetalle } from '../../core/models/remision.model';
+import { RemisionDetalle, nombreMedioPago } from '../../core/models/remision.model';
 import { TextoDialogComponent } from '../../core/dialogs/texto-dialog.component';
+import { PagoDialogComponent, PagoDialogResultado } from './pago-dialog.component';
 import { environment } from '../../../environments/environment';
 import { enlaceWhatsApp, normalizarCelular } from '../../core/utils/whatsapp';
 
@@ -71,6 +72,7 @@ export class RemisionDetalleComponent implements OnInit {
   // (sin abrir antes una pestaña en blanco que luego se queda ahí al volver desde la app).
   private readonly tokenPdf = signal<string | null>(null);
   readonly enviandoCorreo = signal(false);
+  readonly nombreMedio = nombreMedioPago;
 
   private prepararEnlace(r: RemisionDetalle): void {
     if (r.estadoPago !== 'Pagada' || this.tokenPdf()) return;
@@ -97,24 +99,14 @@ export class RemisionDetalleComponent implements OnInit {
     const r = this.remision();
     if (!r) return;
 
-    const total = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(r.totalGeneral);
     this.dialog
-      .open(TextoDialogComponent, {
-        width: '28rem',
-        data: {
-          titulo: 'Confirmar pago',
-          mensaje: `Confirma que el datáfono aprobó el cobro de ${total}. Al confirmar se enviará la remisión a ${r.compradorEmail} y a contabilidad.`,
-          etiqueta: 'Número de recibo Redeban',
-          obligatorio: true,
-          textoConfirmar: 'Confirmar pago'
-        }
-      })
+      .open(PagoDialogComponent, { width: '28rem', data: { total: r.totalGeneral, email: r.compradorEmail } })
       .afterClosed()
-      .subscribe((recibo: string | null) => {
-        if (!recibo) return;
+      .subscribe((pago: PagoDialogResultado | null) => {
+        if (!pago) return;
 
         this.ocupado.set(true);
-        this.remisionService.pagar(r.id, recibo).subscribe({
+        this.remisionService.pagar(r.id, pago.medioPago, pago.reciboRedeban).subscribe({
           next: (resultado) => {
             this.remision.set(resultado.remision);
             this.ocupado.set(false);
@@ -133,7 +125,7 @@ export class RemisionDetalleComponent implements OnInit {
 
   private mensajeWhatsApp(r: RemisionDetalle, enlace: string | null): string {
     const total = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(r.totalGeneral);
-    const base = `Hola ${r.compradorNombre}, gracias por su compra en Jimaco. Su remisión ${r.consecutivoFormateado} por ${total} (recibo Redeban ${r.reciboRedeban}).`;
+    const base = `Hola ${r.compradorNombre}, gracias por su compra en Jimaco. Su remisión ${r.consecutivoFormateado} por ${total} ${r.medioPago === 'Efectivo' ? '(pago en efectivo)' : `(recibo Redeban ${r.reciboRedeban})`}.`;
     return enlace ? `${base} Puede verla aquí: ${enlace}` : base;
   }
 

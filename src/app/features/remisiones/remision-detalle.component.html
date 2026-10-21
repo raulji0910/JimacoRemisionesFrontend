@@ -114,9 +114,10 @@
             <span>
               @if (r.estadoPago === 'Pagada') {
                 Pagada el {{ r.fechaPago | date: 'dd/MM/yyyy HH:mm' }}@if (r.pagadaPor) { · {{ r.pagadaPor }} }
+                @if (r.medioPago) { · {{ nombreMedio(r.medioPago) }} }
                 @if (r.reciboRedeban) { · recibo Redeban {{ r.reciboRedeban }} }
               } @else if (r.estadoPago === 'Pendiente') {
-                Pendiente de cobro en el datáfono
+                Pendiente de cobro
               } @else {
                 Anulada
               }

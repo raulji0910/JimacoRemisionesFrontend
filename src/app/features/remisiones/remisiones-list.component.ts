@@ -1,3 +1,4 @@
+import { nombreMedioPago } from '../../core/models/remision.model';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
@@ -40,6 +41,8 @@ type Filtro = 'todas' | 'pendientes' | 'pagadas' | 'envios' | 'anuladas';
   styleUrl: './remisiones-list.component.scss'
 })
 export class RemisionesListComponent implements OnInit {
+  readonly nombreMedio = nombreMedioPago;
+
   private readonly remisionService = inject(RemisionService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);

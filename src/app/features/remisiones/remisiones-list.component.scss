@@ -100,3 +100,9 @@ table {
   .rem-entrega { grid-area: ent; font-size: 0.8rem; color: var(--mat-sys-on-surface-variant); }
   .rem-correo { grid-area: correo; justify-self: end; }
 }
+
+.remisiones__medio {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant);
+}
