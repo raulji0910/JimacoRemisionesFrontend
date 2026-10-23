@@ -101,6 +101,7 @@
                 <th class="num">Cant.</th>
                 <th class="num">Precio</th>
                 <th class="num">IVA</th>
+                <th class="num">Desc. %</th>
                 <th class="num">Subtotal</th>
                 <th></th>
               </tr>
@@ -128,7 +129,21 @@
                   </td>
                   <td data-label="Precio" class="num">{{ l.precioUnitario | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
                   <td data-label="IVA" class="num">{{ l.iva }}%</td>
-                  <td data-label="Subtotal" class="num">{{ l.precioUnitario * l.cantidad | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                  <td data-label="Desc. %" class="num">
+                    <input
+                      class="remision-form__cantidad remision-form__descuento"
+                      type="number"
+                      inputmode="decimal"
+                      min="0"
+                      max="50"
+                      step="0.5"
+                      [value]="l.descuentoPct || ''"
+                      placeholder="0"
+                      (input)="cambiarDescuentoLinea(l, $any($event.target).value)"
+                      aria-label="Descuento de la línea en porcentaje"
+                    />
+                  </td>
+                  <td data-label="Subtotal" class="num">{{ netoDeLinea(l) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
                   <td>
                     <button mat-icon-button (click)="quitarLinea(l)" aria-label="Quitar producto">
                       <mat-icon>delete_outline</mat-icon>
@@ -143,10 +158,10 @@
     </mat-card-content>
   </mat-card>
 
-  <!-- 3. Entrega, descuento y totales -->
+  <!-- 3. Entrega, retenciones y totales -->
   <mat-card>
     <mat-card-header>
-      <mat-card-title>3. Entrega, descuento y total</mat-card-title>
+      <mat-card-title>3. Entrega, retenciones y total</mat-card-title>
     </mat-card-header>
     <mat-card-content class="remision-form__final">
       <div class="remision-form__opciones">
@@ -164,51 +179,65 @@
           </mat-button-toggle-group>
         </div>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Descuento (%)</mat-label>
-          <input
-            id="descuento"
-            matInput
-            type="number"
-            inputmode="decimal"
-            min="0"
-            max="50"
-            step="0.5"
-            [value]="descuentoPct()"
-            (input)="cambiarDescuento($any($event.target).value)"
-          />
-          <span matTextSuffix>%&nbsp;</span>
-          @if (descuentoPct() > 0) {
-            <mat-hint>= {{ calculo().descuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} sobre el valor antes de IVA (máximo 50 %)</mat-hint>
-          } @else {
-            <mat-hint>Sobre el valor antes de IVA (máximo 50 %)</mat-hint>
-          }
-        </mat-form-field>
+        <fieldset class="remision-form__retenciones">
+          <legend>Retenciones <span>(las practica el comprador; activa solo las que apliquen)</span></legend>
 
-        <div class="remision-form__retencion">
-          <mat-checkbox [checked]="usarRetencion()" (change)="alternarRetencion($event.checked)">Aplicar retención</mat-checkbox>
-          @if (usarRetencion()) {
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Valor de la retención</mat-label>
-              <input
-                id="retencion"
-                matInput
-                type="number"
-                inputmode="numeric"
-                min="0"
-                step="1"
-                [value]="retencion() || ''"
-                (input)="cambiarRetencion($any($event.target).value)"
-              />
-              <span matTextPrefix>$&nbsp;</span>
-              @if (retencionInvalida()) {
-                <mat-hint class="remision-form__error">Debe ser mayor a 0 y menor al valor antes de IVA</mat-hint>
-              } @else {
-                <mat-hint>Se resta del valor antes de IVA</mat-hint>
-              }
-            </mat-form-field>
-          }
-        </div>
+          <div class="remision-form__retencion">
+            <mat-checkbox [checked]="usarReteFuente()" (change)="alternarReteFuente($event.checked)">ReteFuente</mat-checkbox>
+            @if (usarReteFuente()) {
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Concepto</mat-label>
+                <mat-select [value]="conceptoReteFuente()" (selectionChange)="elegirConceptoReteFuente($event.value)">
+                  @for (c of conceptosReteFuente; track c.clave) {
+                    <mat-option [value]="c.clave">{{ c.etiqueta }}@if (c.porcentaje !== null) { ({{ c.porcentaje }} %) }</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Porcentaje</mat-label>
+                <input id="retefuente" matInput type="number" inputmode="decimal" min="0" max="35" step="0.1" [value]="reteFuentePct() || ''" (input)="cambiarReteFuente($any($event.target).value)" />
+                <span matTextSuffix>%&nbsp;</span>
+                @if (reteFuenteInvalida()) {
+                  <mat-hint class="remision-form__error">Entre 0 y 35 %</mat-hint>
+                } @else {
+                  <mat-hint>Sobre el valor antes de IVA = {{ calculo().reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</mat-hint>
+                }
+              </mat-form-field>
+            }
+          </div>
+
+          <div class="remision-form__retencion">
+            <mat-checkbox [checked]="usarReteIca()" (change)="alternarReteIca($event.checked)">ReteICA</mat-checkbox>
+            @if (usarReteIca()) {
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Tarifa por mil</mat-label>
+                <input id="reteica" matInput type="number" inputmode="decimal" min="0" max="20" step="0.01" [value]="reteIcaPorMil() || ''" (input)="cambiarReteIca($any($event.target).value)" />
+                <span matTextSuffix>‰&nbsp;</span>
+                @if (reteIcaInvalida()) {
+                  <mat-hint class="remision-form__error">Entre 0 y 20 por mil</mat-hint>
+                } @else {
+                  <mat-hint>Según el municipio y la actividad. Sobre el valor antes de IVA = {{ calculo().reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</mat-hint>
+                }
+              </mat-form-field>
+            }
+          </div>
+
+          <div class="remision-form__retencion">
+            <mat-checkbox [checked]="usarReteIva()" (change)="alternarReteIva($event.checked)">ReteIVA</mat-checkbox>
+            @if (usarReteIva()) {
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Porcentaje del IVA</mat-label>
+                <input id="reteiva" matInput type="number" inputmode="decimal" min="0" max="100" step="0.5" [value]="reteIvaPct() || ''" (input)="cambiarReteIva($any($event.target).value)" />
+                <span matTextSuffix>%&nbsp;</span>
+                @if (reteIvaInvalida()) {
+                  <mat-hint class="remision-form__error">Entre 0 y 100 %</mat-hint>
+                } @else {
+                  <mat-hint>Tarifa general 15 % del IVA = {{ calculo().reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</mat-hint>
+                }
+              </mat-form-field>
+            }
+          </div>
+        </fieldset>
 
         <mat-form-field appearance="outline">
           <mat-label>Nota (opcional)</mat-label>
@@ -219,18 +248,27 @@
       <div class="remision-form__totales">
         <div class="fila"><span>Subtotal ítems</span><strong>{{ calculo().subtotalItems | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
         @if (calculo().descuento > 0) {
-          <div class="fila"><span>Descuento ({{ descuentoPct() }}%)</span><strong>-{{ calculo().descuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          <div class="fila"><span>Descuentos por ítem</span><strong>-{{ calculo().descuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
         }
-        @if (usarRetencion() && retencion() > 0) {
-          <div class="fila"><span>Retención</span><strong>-{{ retencion() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
-        }
-        @if (calculo().descuento > 0 || (usarRetencion() && retencion() > 0)) {
+        @if (calculo().descuento > 0) {
           <div class="fila"><span>Valor antes de IVA</span><strong>{{ calculo().subtotalConDescuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
         }
         @for (tramo of calculo().ivaDesglose; track tramo.tarifa) {
           <div class="fila"><span>IVA ({{ tramo.tarifa }}%)</span><strong>{{ tramo.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
         }
-        <div class="fila total"><span>TOTAL</span><strong>{{ calculo().totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+        @if (hayRetenciones()) {
+          <div class="fila"><span>Total antes de retenciones</span><strong>{{ calculo().totalBruto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          @if (calculo().reteFuente > 0) {
+            <div class="fila"><span>ReteFuente ({{ reteFuentePct() }}%)</span><strong>-{{ calculo().reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          }
+          @if (calculo().reteIca > 0) {
+            <div class="fila"><span>ReteICA ({{ reteIcaPorMil() }}‰)</span><strong>-{{ calculo().reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          }
+          @if (calculo().reteIva > 0) {
+            <div class="fila"><span>ReteIVA ({{ reteIvaPct() }}% del IVA)</span><strong>-{{ calculo().reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          }
+        }
+        <div class="fila total"><span>{{ hayRetenciones() ? 'TOTAL A PAGAR' : 'TOTAL' }}</span><strong>{{ calculo().totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
       </div>
     </mat-card-content>
   </mat-card>

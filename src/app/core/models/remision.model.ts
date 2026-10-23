@@ -13,13 +13,16 @@ export type EstadoEntrega = 'Pendiente' | 'Entregada';
 export interface RemisionItemEntrada {
   productoId: number;
   cantidad: number;
+  // Descuento de la línea: % (0-50) sobre su valor antes de IVA. No hay descuento general.
+  descuentoPorcentaje: number;
 }
 
 export interface RemisionGuardar {
   compradorId: number;
   tipoEntrega: TipoEntrega;
-  descuentoPorcentaje: number;
-  retencion: number;
+  reteFuentePorcentaje: number;
+  reteIcaPorMil: number;
+  reteIvaPorcentaje: number;
   nota: string | null;
   items: RemisionItemEntrada[];
 }
@@ -32,7 +35,11 @@ export interface RemisionItem {
   precioUnitario: number;
   iva: number;
   cantidad: number;
+  // subtotal = valor bruto (precio x cantidad); descuento y subtotalNeto son los de la línea.
   subtotal: number;
+  descuentoPorcentaje: number;
+  descuento: number;
+  subtotalNeto: number;
   costo: number | null;
   margenPorcentaje: number | null;
 }
@@ -86,11 +93,16 @@ export interface RemisionDetalle {
   motivoAnulacion: string | null;
   items: RemisionItem[];
   subtotalItems: number;
-  descuentoPorcentaje: number;
   descuento: number;
-  retencion: number;
+  reteFuentePorcentaje: number;
+  reteIcaPorMil: number;
+  reteIvaPorcentaje: number;
   subtotalConDescuento: number;
   ivaDesglose: IvaDesglose[];
+  totalBruto: number;
+  reteFuente: number;
+  reteIca: number;
+  reteIva: number;
   totalGeneral: number;
 }
 

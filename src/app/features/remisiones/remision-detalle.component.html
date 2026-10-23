@@ -167,6 +167,9 @@
                 <th class="num">Cant.</th>
                 <th class="num">Precio</th>
                 <th class="num">IVA</th>
+                @if (hayDescuentos()) {
+                  <th class="num">Desc.</th>
+                }
                 <th class="num">Subtotal</th>
                 @if (hayMargen()) {
                   <th class="num">Margen</th>
@@ -181,7 +184,10 @@
                   <td data-label="Cant." class="num">{{ i.cantidad }}</td>
                   <td data-label="Precio" class="num">{{ i.precioUnitario | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
                   <td data-label="IVA" class="num">{{ i.iva }}%</td>
-                  <td data-label="Subtotal" class="num">{{ i.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                  @if (hayDescuentos()) {
+                    <td data-label="Desc." class="num">{{ i.descuentoPorcentaje > 0 ? i.descuentoPorcentaje + '%' : '—' }}</td>
+                  }
+                  <td data-label="Subtotal" class="num">{{ i.subtotalNeto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
                   @if (hayMargen()) {
                     <td data-label="Margen" class="num">{{ i.margenPorcentaje !== null ? i.margenPorcentaje + '%' : '—' }}</td>
                   }
@@ -194,18 +200,27 @@
         <div class="detalle__totales">
           <div class="fila"><span>Subtotal ítems</span><strong>{{ r.subtotalItems | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           @if (r.descuento > 0) {
-            <div class="fila"><span>Descuento ({{ r.descuentoPorcentaje }}%)</span><strong>-{{ r.descuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            <div class="fila"><span>Descuentos por ítem</span><strong>-{{ r.descuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           }
-          @if (r.retencion > 0) {
-            <div class="fila"><span>Retención</span><strong>-{{ r.retencion | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
-          }
-          @if (r.descuento > 0 || r.retencion > 0) {
+          @if (r.descuento > 0) {
             <div class="fila"><span>Valor antes de IVA</span><strong>{{ r.subtotalConDescuento | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           }
           @for (tramo of r.ivaDesglose; track tramo.tarifa) {
             <div class="fila"><span>IVA ({{ tramo.tarifa }}%)</span><strong>{{ tramo.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           }
-          <div class="fila total"><span>TOTAL</span><strong>{{ r.totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+          @if (r.reteFuente > 0 || r.reteIca > 0 || r.reteIva > 0) {
+            <div class="fila"><span>Total antes de retenciones</span><strong>{{ r.totalBruto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            @if (r.reteFuente > 0) {
+              <div class="fila"><span>ReteFuente ({{ r.reteFuentePorcentaje }}%)</span><strong>-{{ r.reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            }
+            @if (r.reteIca > 0) {
+              <div class="fila"><span>ReteICA ({{ r.reteIcaPorMil }}‰)</span><strong>-{{ r.reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            }
+            @if (r.reteIva > 0) {
+              <div class="fila"><span>ReteIVA ({{ r.reteIvaPorcentaje }}% del IVA)</span><strong>-{{ r.reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            }
+          }
+          <div class="fila total"><span>{{ r.reteFuente > 0 || r.reteIca > 0 || r.reteIva > 0 ? 'TOTAL A PAGAR' : 'TOTAL' }}</span><strong>{{ r.totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
         </div>
       </mat-card-content>
     </mat-card>

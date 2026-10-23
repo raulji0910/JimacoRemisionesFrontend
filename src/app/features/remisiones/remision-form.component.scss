@@ -158,11 +158,11 @@
 
     tr {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: auto auto 1fr auto;
       grid-template-areas:
-        'nom nom nom'
-        'cod cod cod'
-        'cant sub quitar';
+        'nom nom nom nom'
+        'cod cod cod cod'
+        'cant desc sub quitar';
       align-items: center;
       gap: 0.25rem 0.75rem;
       padding: 0.75rem 0;
@@ -181,9 +181,29 @@
     td[data-label='Producto'] { grid-area: nom; font-weight: 500; }
     td[data-label='Código'] { grid-area: cod; font-size: 0.8rem; color: var(--mat-sys-on-surface-variant); }
     td[data-label='Cant.'] { grid-area: cant; }
+    td[data-label='Desc. %'] { grid-area: desc; }
+
+    /* Cantidad y descuento llevan una etiqueta pequeña encima: sin ella no se distingue cuál es cuál. */
+    td[data-label='Cant.'],
+    td[data-label='Desc. %'] {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+    }
+
+    td[data-label='Cant.']::before,
+    td[data-label='Desc. %']::before {
+      content: attr(data-label);
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--mat-sys-on-surface-variant);
+    }
     td[data-label='Subtotal'] { grid-area: sub; text-align: right; font-weight: 700; }
     td[data-label='Precio'],
     td[data-label='IVA'] { display: none; }
+
+    /* En celular la etiqueta del descuento va como placeholder (el resto de etiquetas ya están ocultas). */
     td:last-child { grid-area: quitar; }
   }
 
@@ -198,4 +218,35 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.remision-form__retenciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0.75rem 0.9rem 1rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+
+  legend {
+    padding: 0 0.4rem;
+    font-weight: 500;
+
+    span {
+      font-weight: 400;
+      font-size: 0.8rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+  }
+}
+
+.remision-form__descuento {
+  width: 4.5rem;
+}
+
+@media (max-width: 640px) {
+  .remision-form__descuento {
+    width: 5rem;
+  }
 }
