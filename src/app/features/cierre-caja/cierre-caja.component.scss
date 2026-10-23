@@ -3,20 +3,38 @@
   flex-direction: column;
   gap: 1rem;
 
-  &__header {
+  &__filtros {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 0.75rem;
+  }
 
-    h2 {
-      margin: 0;
+  &__atajos {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 0.15rem;
+
+    button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+
+      &.activo {
+        background: var(--mat-sys-primary-container);
+        color: var(--mat-sys-on-primary-container);
+      }
     }
   }
 
-  &__fecha {
-    width: 12rem;
+  &__fechas {
+    display: flex;
+    gap: 0.75rem;
+
+    mat-form-field {
+      flex: 1 1 0;
+      min-width: 0;
+    }
   }
 
   &__medios {
@@ -117,4 +135,31 @@
     font-size: 0.8rem;
     color: var(--mat-sys-on-surface-variant);
   }
+}
+
+// Un día o un usuario: nombre y neto arriba, desglose por medio abajo.
+.cierre__dia {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.1rem 0.75rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.cierre__dia-fecha {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.cierre__dia-neto {
+  font-weight: 700;
+  text-align: right;
+}
+
+.cierre__dia-detalle {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant);
 }

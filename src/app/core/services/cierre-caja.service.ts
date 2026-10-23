@@ -8,7 +8,8 @@ import { CierreCaja } from '../models/cierre-caja.model';
 export class CierreCajaService {
   private readonly http = inject(HttpClient);
 
-  obtener(fecha: string): Observable<CierreCaja> {
-    return this.http.get<CierreCaja>(`${environment.apiUrl}/cierre-caja`, { params: { fecha } });
+  // desde / hasta: días (yyyy-MM-dd), ambos incluidos.
+  obtener(desde: string, hasta: string): Observable<CierreCaja> {
+    return this.http.get<CierreCaja>(`${environment.apiUrl}/cierre-caja`, { params: { desde, hasta } });
   }
 }

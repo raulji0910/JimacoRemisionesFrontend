@@ -52,8 +52,9 @@ export class RemisionService {
     return this.http.post<EnviarCorreoResultado>(`${this.baseUrl}/${id}/enviar-correo`, {});
   }
 
-  cambiarTipoEntrega(id: number, tipoEntrega: TipoEntrega): Observable<RemisionDetalle> {
-    return this.http.put<RemisionDetalle>(`${this.baseUrl}/${id}/entrega`, { tipoEntrega });
+  // Al pasar a envío posterior hay que mandar la dirección y ciudad de entrega (nota).
+  cambiarTipoEntrega(id: number, tipoEntrega: TipoEntrega, nota: string | null = null): Observable<RemisionDetalle> {
+    return this.http.put<RemisionDetalle>(`${this.baseUrl}/${id}/entrega`, { tipoEntrega, nota });
   }
 
   entregar(id: number): Observable<RemisionDetalle> {

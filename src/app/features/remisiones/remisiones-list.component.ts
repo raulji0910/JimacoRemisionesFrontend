@@ -47,7 +47,7 @@ export class RemisionesListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  readonly columnas = ['consecutivo', 'fecha', 'comprador', 'total', 'pago', 'entrega', 'correo'];
+  readonly columnas = ['consecutivo', 'fecha', 'comprador', 'vendedor', 'total', 'pago', 'entrega', 'correo'];
   readonly remisiones = signal<RemisionResumen[]>([]);
   readonly total = signal(0);
   readonly pageIndex = signal(0);

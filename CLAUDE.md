@@ -34,7 +34,7 @@ npx ng serve                               # lee apiUrl de src/environments/envi
 ```
 
 ## Versionado
-En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.12.0`).
+En cada cambio de frontend, subir la versión en `package.json` **y** en los dos `src/environments/environment*.ts` (hoy `0.13.0`).
 
 **WhatsApp en celular**: el token del enlace público se pide al cargar el detalle (no al pulsar) para poder abrir WhatsApp en el mismo gesto: en móvil `window.location.href = whatsapp://send?...` con respaldo `wa.me` a los 1,5 s que se cancela si la página pasa a segundo plano (`visibilitychange`); en computador `window.open(wa.me)`. Antes se abría una pestaña en blanco por adelantado que quedaba abierta al volver desde la app.
 
@@ -43,3 +43,5 @@ En cada cambio de frontend, subir la versión en `package.json` **y** en los dos
 **Cobro**: `PagoDialogComponent` (medio Datáfono/QR/Efectivo + recibo Redeban cuando aplica). **Cierre de caja**: `features/cierre-caja` (selector de día, tarjetas por medio, cobros/devoluciones en tarjetas, CSV con `;` y BOM).
 
 **Descuento por ítem y retenciones**: cada línea de producto tiene su campo "Desc. %" (0–50); no hay descuento general. En "3. Entrega, retenciones y total" van tres casillas independientes (ReteFuente con selector de concepto + %, ReteICA por mil, ReteIVA con 15 % por defecto); catálogo de conceptos en `core/utils/retenciones.ts`.
+
+**Retenciones fijas**: tres casillas (ReteFuente 2,5 %, ReteICA 6,9 por mil, ReteIVA 15 %) con tarifas leídas de `GET /api/configuracion/retenciones` (`RetencionesService`); solo aparecen si el valor antes de IVA llega al mínimo (10 UVT) y se desmarcan solas si baja. **Nota**: obligatoria (≥ 10 caracteres, 1.000 máx.) con "Dirección y ciudad de entrega" cuando la entrega es envío posterior; al cambiarla a envío se precarga con la dirección y ciudad del cliente. **Cierre de caja** por rango (Desde/Hasta + atajos), por día y por usuario.

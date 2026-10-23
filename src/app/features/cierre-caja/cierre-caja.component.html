@@ -1,10 +1,23 @@
 <div class="cierre">
-  <div class="cierre__header">
-    <h2>Cierre de caja</h2>
-    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="cierre__fecha">
-      <mat-label>Día</mat-label>
-      <input matInput type="date" [(ngModel)]="fecha" (ngModelChange)="cargar()" name="fecha" />
-    </mat-form-field>
+  <h2>Cierre de caja</h2>
+
+  <div class="cierre__filtros">
+    <div class="cierre__atajos">
+      @for (a of atajos; track a.clave) {
+        <button mat-stroked-button [class.activo]="atajoActivo === a.clave" (click)="aplicarAtajo(a.clave)">{{ a.etiqueta }}</button>
+      }
+    </div>
+
+    <div class="cierre__fechas">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Desde</mat-label>
+        <input matInput type="date" [(ngModel)]="desde" (ngModelChange)="alCambiarFechas()" name="desde" [max]="hasta" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Hasta</mat-label>
+        <input matInput type="date" [(ngModel)]="hasta" (ngModelChange)="alCambiarFechas()" name="hasta" [min]="desde" />
+      </mat-form-field>
+    </div>
   </div>
 
   @if (cargando()) {
@@ -33,9 +46,9 @@
     <mat-card class="cierre__total">
       <div class="fila"><span>Total cobrado</span><strong>{{ c.totalCobros | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
       @if (c.totalDevoluciones > 0) {
-        <div class="fila"><span>Devoluciones (remisiones pagadas anuladas hoy)</span><strong>-{{ c.totalDevoluciones | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+        <div class="fila"><span>Devoluciones (remisiones pagadas que se anularon en el rango)</span><strong>-{{ c.totalDevoluciones | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
       }
-      <div class="fila neto"><span>Neto del día</span><strong>{{ c.neto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+      <div class="fila neto"><span>Neto del rango</span><strong>{{ c.neto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
     </mat-card>
 
     <div class="cierre__acciones">
@@ -45,9 +58,43 @@
       </button>
     </div>
 
-    <h3>Cobros del día ({{ c.cobros.length }})</h3>
+    @if (c.porDia.length > 1) {
+      <h3>Por día</h3>
+      @for (d of diasConMovimiento(); track d.fecha) {
+        <div class="cierre__dia">
+          <span class="cierre__dia-fecha">{{ d.fecha | date: 'EEE d MMM' }}</span>
+          <span class="cierre__dia-neto">{{ d.neto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+          <span class="cierre__dia-detalle">
+            {{ d.cobros }} {{ d.cobros === 1 ? 'cobro' : 'cobros' }} · Datáfono {{ d.datafono | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+            · QR {{ d.qr | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} · Efectivo {{ d.efectivo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+            @if (d.devoluciones > 0) {
+              · devoluciones -{{ d.devoluciones | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+            }
+          </span>
+        </div>
+      }
+      @if (diasSinMovimiento() > 0) {
+        <p class="cierre__vacio">{{ diasSinMovimiento() }} {{ diasSinMovimiento() === 1 ? 'día' : 'días' }} sin movimiento.</p>
+      }
+    }
+
+    @if (c.porUsuario.length > 0) {
+      <h3>Por usuario (quién cobró)</h3>
+      @for (u of c.porUsuario; track u.usuario) {
+        <div class="cierre__dia">
+          <span class="cierre__dia-fecha">{{ u.usuario }}</span>
+          <span class="cierre__dia-neto">{{ u.totalCobros | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+          <span class="cierre__dia-detalle">
+            {{ u.cantidadCobros }} {{ u.cantidadCobros === 1 ? 'cobro' : 'cobros' }} · Datáfono {{ u.datafono | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+            · QR {{ u.qr | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} · Efectivo {{ u.efectivo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+          </span>
+        </div>
+      }
+    }
+
+    <h3>Cobros ({{ c.cobros.length }})</h3>
     @if (c.cobros.length === 0) {
-      <p class="cierre__vacio">No hubo cobros ese día.</p>
+      <p class="cierre__vacio">No hubo cobros en el rango.</p>
     }
     @for (l of c.cobros; track l.id) {
       <a class="cierre__linea" [routerLink]="['/remisiones', l.id]">
@@ -55,7 +102,8 @@
         <span class="cierre__linea-total">{{ l.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
         <span class="cierre__linea-cliente">{{ l.cliente }}</span>
         <span class="cierre__linea-detalle">
-          {{ l.fecha | date: 'HH:mm' }} · {{ nombreMedio(l.medio) }}@if (l.recibo) { · recibo {{ l.recibo }} }@if (l.anulada) { · <strong>anulada después</strong> }
+          {{ l.fecha | date: 'dd/MM HH:mm' }} · {{ nombreMedio(l.medio) }}@if (l.recibo) { · recibo {{ l.recibo }} }
+          @if (l.usuario) { · cobró {{ l.usuario }} }@if (l.vendedor && l.vendedor !== l.usuario) { · vendió {{ l.vendedor }} }@if (l.anulada) { · <strong>anulada después</strong> }
         </span>
       </a>
     }
@@ -67,7 +115,7 @@
           <span class="cierre__linea-num">{{ l.consecutivo }}</span>
           <span class="cierre__linea-total">-{{ l.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
           <span class="cierre__linea-cliente">{{ l.cliente }}</span>
-          <span class="cierre__linea-detalle">{{ l.fecha | date: 'HH:mm' }} · {{ nombreMedio(l.medio) }}@if (l.recibo) { · recibo {{ l.recibo }} }</span>
+          <span class="cierre__linea-detalle">{{ l.fecha | date: 'dd/MM HH:mm' }} · {{ nombreMedio(l.medio) }}@if (l.recibo) { · recibo {{ l.recibo }} }</span>
         </a>
       }
     }

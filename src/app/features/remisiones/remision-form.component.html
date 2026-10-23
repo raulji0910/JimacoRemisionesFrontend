@@ -167,7 +167,7 @@
       <div class="remision-form__opciones">
         <div>
           <div class="remision-form__etiqueta">Entrega</div>
-          <mat-button-toggle-group [(ngModel)]="tipoEntrega" name="tipoEntrega" aria-label="Tipo de entrega">
+          <mat-button-toggle-group [ngModel]="tipoEntrega()" (ngModelChange)="alCambiarTipoEntrega($event)" name="tipoEntrega" aria-label="Tipo de entrega">
             <mat-button-toggle value="EnSitio">
               <mat-icon>storefront</mat-icon>
               Entregada en sitio
@@ -179,69 +179,53 @@
           </mat-button-toggle-group>
         </div>
 
-        <fieldset class="remision-form__retenciones">
-          <legend>Retenciones <span>(las practica el comprador; activa solo las que apliquen)</span></legend>
+        @if (retencionesDisponibles()) {
+          <fieldset class="remision-form__retenciones">
+            <legend>Retenciones <span>(las practica el comprador; activa solo las que apliquen)</span></legend>
 
-          <div class="remision-form__retencion">
-            <mat-checkbox [checked]="usarReteFuente()" (change)="alternarReteFuente($event.checked)">ReteFuente</mat-checkbox>
-            @if (usarReteFuente()) {
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Concepto</mat-label>
-                <mat-select [value]="conceptoReteFuente()" (selectionChange)="elegirConceptoReteFuente($event.value)">
-                  @for (c of conceptosReteFuente; track c.clave) {
-                    <mat-option [value]="c.clave">{{ c.etiqueta }}@if (c.porcentaje !== null) { ({{ c.porcentaje }} %) }</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Porcentaje</mat-label>
-                <input id="retefuente" matInput type="number" inputmode="decimal" min="0" max="35" step="0.1" [value]="reteFuentePct() || ''" (input)="cambiarReteFuente($any($event.target).value)" />
-                <span matTextSuffix>%&nbsp;</span>
-                @if (reteFuenteInvalida()) {
-                  <mat-hint class="remision-form__error">Entre 0 y 35 %</mat-hint>
-                } @else {
-                  <mat-hint>Sobre el valor antes de IVA = {{ calculo().reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</mat-hint>
-                }
-              </mat-form-field>
-            }
-          </div>
+            <mat-checkbox [checked]="usarReteFuente()" (change)="usarReteFuente.set($event.checked)">
+              ReteFuente {{ reglas().reteFuentePorcentaje }} %
+              @if (usarReteFuente()) {
+                <span class="remision-form__rete-valor">-{{ calculo().reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+              }
+            </mat-checkbox>
+            <mat-checkbox [checked]="usarReteIca()" (change)="usarReteIca.set($event.checked)">
+              ReteICA {{ reglas().reteIcaPorMil }} por mil
+              @if (usarReteIca()) {
+                <span class="remision-form__rete-valor">-{{ calculo().reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+              }
+            </mat-checkbox>
+            <mat-checkbox [checked]="usarReteIva()" (change)="usarReteIva.set($event.checked)">
+              ReteIVA {{ reglas().reteIvaPorcentaje }} % del IVA
+              @if (usarReteIva()) {
+                <span class="remision-form__rete-valor">-{{ calculo().reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+              }
+            </mat-checkbox>
+          </fieldset>
+        } @else {
+          <p class="remision-form__aviso">
+            Las retenciones aplican cuando el valor antes de IVA es de {{ reglas().baseMinima | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} o más (10 UVT).
+          </p>
+        }
 
-          <div class="remision-form__retencion">
-            <mat-checkbox [checked]="usarReteIca()" (change)="alternarReteIca($event.checked)">ReteICA</mat-checkbox>
-            @if (usarReteIca()) {
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Tarifa por mil</mat-label>
-                <input id="reteica" matInput type="number" inputmode="decimal" min="0" max="20" step="0.01" [value]="reteIcaPorMil() || ''" (input)="cambiarReteIca($any($event.target).value)" />
-                <span matTextSuffix>‰&nbsp;</span>
-                @if (reteIcaInvalida()) {
-                  <mat-hint class="remision-form__error">Entre 0 y 20 por mil</mat-hint>
-                } @else {
-                  <mat-hint>Según el municipio y la actividad. Sobre el valor antes de IVA = {{ calculo().reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</mat-hint>
-                }
-              </mat-form-field>
-            }
-          </div>
-
-          <div class="remision-form__retencion">
-            <mat-checkbox [checked]="usarReteIva()" (change)="alternarReteIva($event.checked)">ReteIVA</mat-checkbox>
-            @if (usarReteIva()) {
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Porcentaje del IVA</mat-label>
-                <input id="reteiva" matInput type="number" inputmode="decimal" min="0" max="100" step="0.5" [value]="reteIvaPct() || ''" (input)="cambiarReteIva($any($event.target).value)" />
-                <span matTextSuffix>%&nbsp;</span>
-                @if (reteIvaInvalida()) {
-                  <mat-hint class="remision-form__error">Entre 0 y 100 %</mat-hint>
-                } @else {
-                  <mat-hint>Tarifa general 15 % del IVA = {{ calculo().reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</mat-hint>
-                }
-              </mat-form-field>
-            }
-          </div>
-        </fieldset>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Nota (opcional)</mat-label>
-          <input matInput [(ngModel)]="nota" name="nota" maxlength="500" />
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{ notaObligatoria() ? 'Dirección y ciudad de entrega' : 'Nota (opcional)' }}</mat-label>
+          <textarea
+            id="nota"
+            matInput
+            rows="3"
+            maxlength="1000"
+            [required]="notaObligatoria()"
+            [ngModel]="nota()"
+            (ngModelChange)="nota.set($event)"
+            name="nota"
+          ></textarea>
+          @if (notaInvalida()) {
+            <mat-hint class="remision-form__error">Obligatorio en un envío posterior: escribe la dirección y la ciudad (mínimo 10 caracteres)</mat-hint>
+          } @else if (notaObligatoria()) {
+            <mat-hint>Sé específico: dirección, barrio, ciudad y quién recibe</mat-hint>
+          }
+          <mat-hint align="end">{{ nota().length }} / 1000</mat-hint>
         </mat-form-field>
       </div>
 
@@ -259,13 +243,13 @@
         @if (hayRetenciones()) {
           <div class="fila"><span>Total antes de retenciones</span><strong>{{ calculo().totalBruto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           @if (calculo().reteFuente > 0) {
-            <div class="fila"><span>ReteFuente ({{ reteFuentePct() }}%)</span><strong>-{{ calculo().reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            <div class="fila"><span>ReteFuente ({{ reglas().reteFuentePorcentaje }}%)</span><strong>-{{ calculo().reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           }
           @if (calculo().reteIca > 0) {
-            <div class="fila"><span>ReteICA ({{ reteIcaPorMil() }}‰)</span><strong>-{{ calculo().reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            <div class="fila"><span>ReteICA ({{ reglas().reteIcaPorMil }}‰)</span><strong>-{{ calculo().reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           }
           @if (calculo().reteIva > 0) {
-            <div class="fila"><span>ReteIVA ({{ reteIvaPct() }}% del IVA)</span><strong>-{{ calculo().reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
+            <div class="fila"><span>ReteIVA ({{ reglas().reteIvaPorcentaje }}% del IVA)</span><strong>-{{ calculo().reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           }
         }
         <div class="fila total"><span>{{ hayRetenciones() ? 'TOTAL A PAGAR' : 'TOTAL' }}</span><strong>{{ calculo().totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>

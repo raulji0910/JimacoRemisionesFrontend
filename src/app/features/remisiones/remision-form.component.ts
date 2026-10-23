@@ -1,6 +1,6 @@
 import { descuentoDeLinea } from '../../core/utils/calculos-remision';
-import { CONCEPTOS_RETEFUENTE, RETEIVA_GENERAL, TOPE_RETEFUENTE, TOPE_RETEICA_POR_MIL, TOPE_RETEIVA } from '../../core/utils/retenciones';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { REGLAS_POR_DEFECTO, ReglasRetenciones, RetencionesService } from '../../core/services/retenciones.service';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -78,17 +78,14 @@ export class RemisionFormComponent implements OnInit {
 
   readonly comprador = signal<Comprador | null>(null);
   readonly lineas = signal<Linea[]>([]);
-  // Retenciones: el vendedor activa solo las que apliquen a ese cliente (las practica el comprador).
-  readonly conceptosReteFuente = CONCEPTOS_RETEFUENTE;
+  // Retenciones: el vendedor activa solo las que apliquen (las practica el comprador). Tarifas fijas (del servidor) y solo
+  // disponibles si el valor antes de IVA, ya con descuentos, llega al mínimo (10 UVT).
+  readonly reglas = signal<ReglasRetenciones>(REGLAS_POR_DEFECTO);
   readonly usarReteFuente = signal(false);
-  readonly conceptoReteFuente = signal('compras-declarante');
-  readonly reteFuentePct = signal(0);
   readonly usarReteIca = signal(false);
-  readonly reteIcaPorMil = signal(0);
   readonly usarReteIva = signal(false);
-  readonly reteIvaPct = signal(0);
-  tipoEntrega: TipoEntrega = 'EnSitio';
-  nota = '';
+  readonly tipoEntrega = signal<TipoEntrega>('EnSitio');
+  readonly nota = signal('');
 
   readonly buscadorComprador = new FormControl<string | Comprador>('', { nonNullable: true });
   readonly buscadorProducto = new FormControl<string | Producto>('', { nonNullable: true });
@@ -98,18 +95,23 @@ export class RemisionFormComponent implements OnInit {
   readonly calculo = computed(() =>
     calcularRemision(
       this.lineas().map((l) => ({ precioUnitario: l.precioUnitario, cantidad: l.cantidad, iva: l.iva, descuentoPorcentaje: l.descuentoPct })),
-      this.usarReteFuente() ? this.reteFuentePct() : 0,
-      this.usarReteIca() ? this.reteIcaPorMil() : 0,
-      this.usarReteIva() ? this.reteIvaPct() : 0
+      this.usarReteFuente() ? this.reglas().reteFuentePorcentaje : 0,
+      this.usarReteIca() ? this.reglas().reteIcaPorMil : 0,
+      this.usarReteIva() ? this.reglas().reteIvaPorcentaje : 0
     )
   );
 
+  // Valor antes de IVA (con descuentos, sin retenciones): decide si se ofrecen las retenciones.
+  readonly baseAntesDeIva = computed(
+    () => calcularRemision(this.lineas().map((l) => ({ precioUnitario: l.precioUnitario, cantidad: l.cantidad, iva: l.iva, descuentoPorcentaje: l.descuentoPct }))).subtotalConDescuento
+  );
+  readonly retencionesDisponibles = computed(() => this.baseAntesDeIva() >= this.reglas().baseMinima);
+
   // Descuento por ítem: 0 a 50 %. Cada retención activada debe tener un valor mayor a 0 y dentro de su tope.
   readonly descuentoInvalido = computed(() => this.lineas().some((l) => l.descuentoPct < 0 || l.descuentoPct > 50));
-  readonly reteFuenteInvalida = computed(() => this.usarReteFuente() && (this.reteFuentePct() <= 0 || this.reteFuentePct() > TOPE_RETEFUENTE));
-  readonly reteIcaInvalida = computed(() => this.usarReteIca() && (this.reteIcaPorMil() <= 0 || this.reteIcaPorMil() > TOPE_RETEICA_POR_MIL));
-  readonly reteIvaInvalida = computed(() => this.usarReteIva() && (this.reteIvaPct() <= 0 || this.reteIvaPct() > TOPE_RETEIVA));
-  readonly retencionesInvalidas = computed(() => this.reteFuenteInvalida() || this.reteIcaInvalida() || this.reteIvaInvalida());
+  // En un envío posterior las notas llevan la dirección y la ciudad de entrega: son obligatorias.
+  readonly notaObligatoria = computed(() => this.tipoEntrega() === 'Envio');
+  readonly notaInvalida = computed(() => this.notaObligatoria() && this.nota().trim().length < 10);
   readonly hayRetenciones = computed(() => this.calculo().reteFuente > 0 || this.calculo().reteIca > 0 || this.calculo().reteIva > 0);
 
   readonly puedeGuardar = computed(
@@ -117,10 +119,22 @@ export class RemisionFormComponent implements OnInit {
       !!this.comprador()?.email &&
       this.lineas().length > 0 &&
       !this.descuentoInvalido() &&
-      !this.retencionesInvalidas() &&
+      !this.notaInvalida() &&
       !this.guardando() &&
       !this.lineas().some((l) => l.existencia !== null && l.cantidad > l.existencia)
   );
+
+  constructor() {
+    inject(RetencionesService).reglas().subscribe((r) => this.reglas.set(r));
+    // Si el valor antes de IVA baja del mínimo (p. ej. al quitar un producto), las retenciones marcadas se desmarcan solas.
+    effect(() => {
+      if (!this.retencionesDisponibles()) {
+        this.usarReteFuente.set(false);
+        this.usarReteIca.set(false);
+        this.usarReteIva.set(false);
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.buscadorComprador.valueChanges
@@ -158,20 +172,11 @@ export class RemisionFormComponent implements OnInit {
           return;
         }
 
-        this.tipoEntrega = remision.tipoEntrega;
-        this.nota = remision.nota ?? '';
+        this.tipoEntrega.set(remision.tipoEntrega);
+        this.nota.set(remision.nota ?? '');
         this.usarReteFuente.set(remision.reteFuentePorcentaje > 0);
-        this.reteFuentePct.set(remision.reteFuentePorcentaje);
-        // Sin ReteFuente guardada se deja el concepto por defecto (al activarla se rellena su tarifa); con una guardada, el concepto que coincida o "Otro".
-        this.conceptoReteFuente.set(
-          remision.reteFuentePorcentaje > 0
-            ? (CONCEPTOS_RETEFUENTE.find((c) => c.porcentaje === remision.reteFuentePorcentaje)?.clave ?? 'otro')
-            : 'compras-declarante'
-        );
         this.usarReteIca.set(remision.reteIcaPorMil > 0);
-        this.reteIcaPorMil.set(remision.reteIcaPorMil);
         this.usarReteIva.set(remision.reteIvaPorcentaje > 0);
-        this.reteIvaPct.set(remision.reteIvaPorcentaje);
         this.lineas.set(
           remision.items.map((i) => ({
             productoId: i.productoId,
@@ -294,45 +299,13 @@ export class RemisionFormComponent implements OnInit {
     return l.precioUnitario * l.cantidad - descuentoDeLinea(calculo);
   }
 
-  alternarReteFuente(activa: boolean): void {
-    this.usarReteFuente.set(activa);
-    if (!activa) {
-      this.reteFuentePct.set(0);
-    } else {
-      this.elegirConceptoReteFuente(this.conceptoReteFuente());
+  // Al pasar a envío posterior la nota arranca con la dirección y ciudad del comprador (editable) para no escribirla de cero.
+  alCambiarTipoEntrega(tipo: TipoEntrega): void {
+    this.tipoEntrega.set(tipo);
+    const comprador = this.comprador();
+    if (tipo === 'Envio' && !this.nota().trim() && comprador) {
+      this.nota.set([comprador.direccion, comprador.ciudad].filter((x) => !!x).join(', '));
     }
-  }
-
-  // Al elegir un concepto se rellena su tarifa; "Otro" deja el porcentaje para digitarlo.
-  elegirConceptoReteFuente(clave: string): void {
-    this.conceptoReteFuente.set(clave);
-    const concepto = CONCEPTOS_RETEFUENTE.find((c) => c.clave === clave);
-    if (concepto?.porcentaje != null) this.reteFuentePct.set(concepto.porcentaje);
-  }
-
-  cambiarReteFuente(valor: number | string): void {
-    this.reteFuentePct.set(Math.max(0, Number(valor) || 0));
-    // Si el porcentaje digitado ya no corresponde al concepto elegido, queda como "Otro".
-    const actual = CONCEPTOS_RETEFUENTE.find((c) => c.clave === this.conceptoReteFuente());
-    if (actual?.porcentaje != null && actual.porcentaje !== this.reteFuentePct()) this.conceptoReteFuente.set('otro');
-  }
-
-  alternarReteIca(activa: boolean): void {
-    this.usarReteIca.set(activa);
-    if (!activa) this.reteIcaPorMil.set(0);
-  }
-
-  cambiarReteIca(valor: number | string): void {
-    this.reteIcaPorMil.set(Math.max(0, Number(valor) || 0));
-  }
-
-  alternarReteIva(activa: boolean): void {
-    this.usarReteIva.set(activa);
-    this.reteIvaPct.set(activa ? RETEIVA_GENERAL : 0);
-  }
-
-  cambiarReteIva(valor: number | string): void {
-    this.reteIvaPct.set(Math.max(0, Number(valor) || 0));
   }
 
   // ---- Guardar ----
@@ -343,11 +316,11 @@ export class RemisionFormComponent implements OnInit {
 
     const dto: RemisionGuardar = {
       compradorId: comprador.id,
-      tipoEntrega: this.tipoEntrega,
-      reteFuentePorcentaje: this.usarReteFuente() ? this.reteFuentePct() : 0,
-      reteIcaPorMil: this.usarReteIca() ? this.reteIcaPorMil() : 0,
-      reteIvaPorcentaje: this.usarReteIva() ? this.reteIvaPct() : 0,
-      nota: this.nota.trim() || null,
+      tipoEntrega: this.tipoEntrega(),
+      reteFuente: this.retencionesDisponibles() && this.usarReteFuente(),
+      reteIca: this.retencionesDisponibles() && this.usarReteIca(),
+      reteIva: this.retencionesDisponibles() && this.usarReteIva(),
+      nota: this.nota().trim() || null,
       items: this.lineas().map((l) => ({ productoId: l.productoId, cantidad: l.cantidad, descuentoPorcentaje: l.descuentoPct }))
     };
 

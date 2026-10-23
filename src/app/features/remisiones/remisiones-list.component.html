@@ -16,7 +16,7 @@
   </mat-button-toggle-group>
 
   <mat-form-field appearance="outline" class="remisiones__buscador">
-    <mat-label>Buscar remisión o cliente</mat-label>
+    <mat-label>Buscar remisión, cliente o vendedor</mat-label>
     <input id="buscar-remision" matInput [(ngModel)]="texto" (ngModelChange)="buscar()" />
     @if (texto) {
       <button matSuffix mat-icon-button aria-label="Limpiar búsqueda" (click)="limpiarBusqueda()">
@@ -48,6 +48,11 @@
         {{ r.compradorNombre }}
         <span class="remisiones__documento">{{ r.compradorDocumento }}</span>
       </td>
+    </ng-container>
+
+    <ng-container matColumnDef="vendedor">
+      <th mat-header-cell *matHeaderCellDef>Vendedor</th>
+      <td mat-cell *matCellDef="let r" data-label="Vendedor" class="rem-vendedor">{{ r.creadoPor || '—' }}</td>
     </ng-container>
 
     <ng-container matColumnDef="total">

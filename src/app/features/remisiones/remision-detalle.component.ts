@@ -244,7 +244,29 @@ export class RemisionDetalleComponent implements OnInit {
     const r = this.remision();
     if (!r) return;
     const nuevo = r.tipoEntrega === 'EnSitio' ? 'Envio' : 'EnSitio';
-    this.ejecutar(this.remisionService.cambiarTipoEntrega(r.id, nuevo), 'Tipo de entrega actualizado', 'No se pudo cambiar el tipo de entrega.');
+    if (nuevo === 'EnSitio') {
+      this.ejecutar(this.remisionService.cambiarTipoEntrega(r.id, nuevo), 'Tipo de entrega actualizado', 'No se pudo cambiar el tipo de entrega.');
+      return;
+    }
+
+    // Un envío posterior necesita la dirección y la ciudad de entrega.
+    this.dialog
+      .open(TextoDialogComponent, {
+        width: '30rem',
+        maxWidth: '95vw',
+        data: {
+          titulo: 'Pasar a envío posterior',
+          mensaje: 'Escribe la dirección y la ciudad de entrega. Se avisará a compras para que lo despache.',
+          etiqueta: 'Dirección y ciudad de entrega',
+          obligatorio: true,
+          textoConfirmar: 'Pasar a envío posterior'
+        }
+      })
+      .afterClosed()
+      .subscribe((direccion: string | null) => {
+        if (!direccion) return;
+        this.ejecutar(this.remisionService.cambiarTipoEntrega(r.id, nuevo, direccion), 'Tipo de entrega actualizado', 'No se pudo cambiar el tipo de entrega.');
+      });
   }
 
   anular(): void {

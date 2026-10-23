@@ -146,8 +146,13 @@
           </div>
           @if (r.nota) {
             <div class="detalle__dato">
-              <mat-icon>notes</mat-icon>
-              <span>{{ r.nota }}</span>
+              <mat-icon>{{ r.tipoEntrega === 'Envio' ? 'location_on' : 'notes' }}</mat-icon>
+              <span>
+                @if (r.tipoEntrega === 'Envio') {
+                  <strong>Entregar en:</strong>
+                }
+                {{ r.nota }}
+              </span>
             </div>
           }
         </mat-card-content>

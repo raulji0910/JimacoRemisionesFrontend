@@ -8,7 +8,8 @@ export interface CierreLinea {
   medio: MedioPago | null;
   recibo: string | null;
   total: number;
-  usuario: string | null;
+  usuario: string | null; // quien la cobró
+  vendedor: string | null; // quien la creó
   anulada: boolean;
 }
 
@@ -21,12 +22,36 @@ export interface CierreMedio {
   neto: number;
 }
 
-export interface CierreCaja {
+// Un día del rango; datafono / qr / efectivo son el neto del día en cada medio.
+export interface CierreDia {
   fecha: string;
+  cobros: number;
+  datafono: number;
+  qr: number;
+  efectivo: number;
+  totalCobros: number;
+  devoluciones: number;
+  neto: number;
+}
+
+export interface CierreUsuario {
+  usuario: string;
+  cantidadCobros: number;
+  datafono: number;
+  qr: number;
+  efectivo: number;
+  totalCobros: number;
+}
+
+export interface CierreCaja {
+  desde: string;
+  hasta: string;
   porMedio: CierreMedio[];
   totalCobros: number;
   totalDevoluciones: number;
   neto: number;
+  porDia: CierreDia[];
+  porUsuario: CierreUsuario[];
   cobros: CierreLinea[];
   devoluciones: CierreLinea[];
 }

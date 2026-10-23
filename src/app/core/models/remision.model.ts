@@ -20,9 +20,10 @@ export interface RemisionItemEntrada {
 export interface RemisionGuardar {
   compradorId: number;
   tipoEntrega: TipoEntrega;
-  reteFuentePorcentaje: number;
-  reteIcaPorMil: number;
-  reteIvaPorcentaje: number;
+  // Las retenciones se activan o no: sus tarifas son fijas (las define el servidor) y solo proceden desde un valor mínimo antes de IVA.
+  reteFuente: boolean;
+  reteIca: boolean;
+  reteIva: boolean;
   nota: string | null;
   items: RemisionItemEntrada[];
 }
@@ -63,6 +64,7 @@ export interface RemisionResumen {
   tipoEntrega: TipoEntrega;
   estadoEntrega: EstadoEntrega;
   correoEnviado: boolean;
+  creadoPor: string | null;
 }
 
 export interface RemisionDetalle {
