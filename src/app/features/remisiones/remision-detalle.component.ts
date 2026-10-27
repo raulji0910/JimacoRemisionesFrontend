@@ -50,7 +50,8 @@ export class RemisionDetalleComponent implements OnInit {
   readonly esAnulada = computed(() => this.remision()?.estadoPago === 'Anulada');
   readonly entregaPendiente = computed(() => this.esPagada() && this.remision()?.estadoEntrega === 'Pendiente');
   // Pagada: solo admin anula (regla del backend). Pendiente: cualquiera.
-  readonly puedeAnular = computed(() => this.esPendiente() || (this.esPagada() && this.authService.esAdmin));
+  // Solo el administrador anula remisiones (pendientes o pagadas).
+  readonly puedeAnular = computed(() => (this.esPendiente() || this.esPagada()) && this.authService.esAdmin);
   readonly hayDescuentos = computed(() => this.remision()?.items.some((i) => i.descuento > 0) ?? false);
   readonly hayMargen = computed(() => this.remision()?.items.some((i) => i.margenPorcentaje !== null) ?? false);
 
