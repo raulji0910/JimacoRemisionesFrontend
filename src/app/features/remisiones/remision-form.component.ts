@@ -78,12 +78,10 @@ export class RemisionFormComponent implements OnInit {
 
   readonly comprador = signal<Comprador | null>(null);
   readonly lineas = signal<Linea[]>([]);
-  // Retenciones: el vendedor activa solo las que apliquen (las practica el comprador). Tarifas fijas (del servidor) y solo
-  // disponibles si el valor antes de IVA, ya con descuentos, llega al mínimo (10 UVT).
+  // Solo se maneja ReteFuente (la practica el comprador): tarifa fija (del servidor), solo a persona jurídica (NIT) y solo si el
+  // valor antes de IVA, ya con descuentos, llega al mínimo (10 UVT).
   readonly reglas = signal<ReglasRetenciones>(REGLAS_POR_DEFECTO);
   readonly usarReteFuente = signal(false);
-  readonly usarReteIca = signal(false);
-  readonly usarReteIva = signal(false);
   readonly tipoEntrega = signal<TipoEntrega>('EnSitio');
   readonly nota = signal('');
 
@@ -96,8 +94,8 @@ export class RemisionFormComponent implements OnInit {
     calcularRemision(
       this.lineas().map((l) => ({ precioUnitario: l.precioUnitario, cantidad: l.cantidad, iva: l.iva, descuentoPorcentaje: l.descuentoPct })),
       this.usarReteFuente() ? this.reglas().reteFuentePorcentaje : 0,
-      this.usarReteIca() ? this.reglas().reteIcaPorMil : 0,
-      this.usarReteIva() ? this.reglas().reteIvaPorcentaje : 0
+      0,
+      0
     )
   );
 
@@ -105,14 +103,15 @@ export class RemisionFormComponent implements OnInit {
   readonly baseAntesDeIva = computed(
     () => calcularRemision(this.lineas().map((l) => ({ precioUnitario: l.precioUnitario, cantidad: l.cantidad, iva: l.iva, descuentoPorcentaje: l.descuentoPct }))).subtotalConDescuento
   );
-  readonly retencionesDisponibles = computed(() => this.baseAntesDeIva() >= this.reglas().baseMinima);
+  readonly esPersonaJuridica = computed(() => this.comprador()?.tipoDocumento?.toUpperCase() === 'NIT');
+  readonly retencionesDisponibles = computed(() => this.esPersonaJuridica() && this.baseAntesDeIva() >= this.reglas().baseMinima);
 
   // Descuento por ítem: 0 a 50 %. Cada retención activada debe tener un valor mayor a 0 y dentro de su tope.
   readonly descuentoInvalido = computed(() => this.lineas().some((l) => l.descuentoPct < 0 || l.descuentoPct > 50));
   // En un envío posterior las notas llevan la dirección y la ciudad de entrega: son obligatorias.
   readonly notaObligatoria = computed(() => this.tipoEntrega() === 'Envio');
   readonly notaInvalida = computed(() => this.notaObligatoria() && this.nota().trim().length < 10);
-  readonly hayRetenciones = computed(() => this.calculo().reteFuente > 0 || this.calculo().reteIca > 0 || this.calculo().reteIva > 0);
+  readonly hayRetenciones = computed(() => this.calculo().reteFuente > 0);
 
   readonly puedeGuardar = computed(
     () =>
@@ -126,12 +125,11 @@ export class RemisionFormComponent implements OnInit {
 
   constructor() {
     inject(RetencionesService).reglas().subscribe((r) => this.reglas.set(r));
-    // Si el valor antes de IVA baja del mínimo (p. ej. al quitar un producto), las retenciones marcadas se desmarcan solas.
+    // Si el comprador deja de ser persona jurídica o el valor antes de IVA baja del mínimo, la retención marcada se desmarca sola.
     effect(() => {
-      if (!this.retencionesDisponibles()) {
+      // Mientras el comprador se carga al editar (comprador() es null) no se toca la marca guardada.
+      if (this.comprador() && !this.retencionesDisponibles()) {
         this.usarReteFuente.set(false);
-        this.usarReteIca.set(false);
-        this.usarReteIva.set(false);
       }
     });
   }
@@ -175,8 +173,6 @@ export class RemisionFormComponent implements OnInit {
         this.tipoEntrega.set(remision.tipoEntrega);
         this.nota.set(remision.nota ?? '');
         this.usarReteFuente.set(remision.reteFuentePorcentaje > 0);
-        this.usarReteIca.set(remision.reteIcaPorMil > 0);
-        this.usarReteIva.set(remision.reteIvaPorcentaje > 0);
         this.lineas.set(
           remision.items.map((i) => ({
             productoId: i.productoId,
@@ -318,8 +314,8 @@ export class RemisionFormComponent implements OnInit {
       compradorId: comprador.id,
       tipoEntrega: this.tipoEntrega(),
       reteFuente: this.retencionesDisponibles() && this.usarReteFuente(),
-      reteIca: this.retencionesDisponibles() && this.usarReteIca(),
-      reteIva: this.retencionesDisponibles() && this.usarReteIva(),
+      reteIca: false,
+      reteIva: false,
       nota: this.nota().trim() || null,
       items: this.lineas().map((l) => ({ productoId: l.productoId, cantidad: l.cantidad, descuentoPorcentaje: l.descuentoPct }))
     };

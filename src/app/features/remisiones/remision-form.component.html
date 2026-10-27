@@ -181,7 +181,7 @@
 
         @if (retencionesDisponibles()) {
           <fieldset class="remision-form__retenciones">
-            <legend>Retenciones <span>(las practica el comprador; activa solo las que apliquen)</span></legend>
+            <legend>Retención <span>(la practica el comprador persona jurídica)</span></legend>
 
             <mat-checkbox [checked]="usarReteFuente()" (change)="usarReteFuente.set($event.checked)">
               ReteFuente {{ reglas().reteFuentePorcentaje }} %
@@ -189,22 +189,10 @@
                 <span class="remision-form__rete-valor">-{{ calculo().reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
               }
             </mat-checkbox>
-            <mat-checkbox [checked]="usarReteIca()" (change)="usarReteIca.set($event.checked)">
-              ReteICA {{ reglas().reteIcaPorMil }} por mil
-              @if (usarReteIca()) {
-                <span class="remision-form__rete-valor">-{{ calculo().reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-              }
-            </mat-checkbox>
-            <mat-checkbox [checked]="usarReteIva()" (change)="usarReteIva.set($event.checked)">
-              ReteIVA {{ reglas().reteIvaPorcentaje }} % del IVA
-              @if (usarReteIva()) {
-                <span class="remision-form__rete-valor">-{{ calculo().reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-              }
-            </mat-checkbox>
           </fieldset>
         } @else {
           <p class="remision-form__aviso">
-            Las retenciones aplican cuando el valor antes de IVA es de {{ reglas().baseMinima | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} o más (10 UVT).
+            La retención en la fuente aplica solo a personas jurídicas (NIT) cuando el valor antes de IVA es de {{ reglas().baseMinima | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} o más (10 UVT).
           </p>
         }
 
@@ -244,12 +232,6 @@
           <div class="fila"><span>Total antes de retenciones</span><strong>{{ calculo().totalBruto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           @if (calculo().reteFuente > 0) {
             <div class="fila"><span>ReteFuente ({{ reglas().reteFuentePorcentaje }}%)</span><strong>-{{ calculo().reteFuente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
-          }
-          @if (calculo().reteIca > 0) {
-            <div class="fila"><span>ReteICA ({{ reglas().reteIcaPorMil }}‰)</span><strong>-{{ calculo().reteIca | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
-          }
-          @if (calculo().reteIva > 0) {
-            <div class="fila"><span>ReteIVA ({{ reglas().reteIvaPorcentaje }}% del IVA)</span><strong>-{{ calculo().reteIva | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
           }
         }
         <div class="fila total"><span>{{ hayRetenciones() ? 'TOTAL A PAGAR' : 'TOTAL' }}</span><strong>{{ calculo().totalGeneral | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></div>
