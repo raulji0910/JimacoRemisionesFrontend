@@ -1,5 +1,5 @@
 import { normalizarCelular } from '../../core/utils/whatsapp';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -72,6 +72,7 @@ export class CompradorFormDialogComponent {
   // Ciudad: se elige de la lista oficial del DANE con búsqueda predictiva; no se acepta texto libre.
   // Mientras escribes el valor es un string; al elegir una opción pasa a ser el Municipio.
   private readonly municipioService = inject(MunicipioService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private municipios: Municipio[] = [];
   ciudadValor: string | Municipio = '';
   sugerencias: Municipio[] = [];
@@ -86,6 +87,8 @@ export class CompradorFormDialogComponent {
       const codigo = this.data.comprador?.ciudadCodigoDane;
       // Un comprador antiguo sin código (ciudad escrita a mano) debe volver a elegirla de la lista.
       if (codigo) this.ciudadValor = lista.find((m) => m.codigo === codigo) ?? '';
+      // La lista llega después de abrir el diálogo (la primera vez de la sesión): hay que repintar para ver la ciudad guardada.
+      this.cdr.markForCheck();
     });
   }
 
